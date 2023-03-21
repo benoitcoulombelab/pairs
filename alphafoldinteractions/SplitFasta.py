@@ -6,8 +6,8 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Splits FASTA in one file per sequence. "
-                                                 "The output filenames correspond to the first alphanumerical characters "
-                                                 "in the sequence name.")
+                                                 "The output filenames correspond to the first alphanumerical "
+                                                 "characters in the sequence name.")
     parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help="FASTA containing multiple sequences")
     parser.add_argument('-o', '--outdir', default="",

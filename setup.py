@@ -20,6 +20,7 @@ setup(
         "console_scripts": [
             "count-interactions = alphafoldinteractions.CountInteractions:main",
             "keep-gene-proteins = alphafoldinteractions.KeepGeneProteins:main",
+            "rename-sequences = alphafoldinteractions.RenameSequences:main",
             "split-fasta = alphafoldinteractions.SplitFasta:main"
         ]
     }

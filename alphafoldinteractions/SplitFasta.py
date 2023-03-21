@@ -6,8 +6,8 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(description="Splits FASTA in one file per sequence. "
-                                                 "The output filenames correspond to the first alphanumerical "
-                                                 "characters in the sequence name.")
+                                                 "The output filenames correspond to the accession number "
+                                                 "in the sequence name.")
     parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help="FASTA containing multiple sequences")
     parser.add_argument('-o', '--outdir', default="",
@@ -23,7 +23,7 @@ def main():
         line = lines[line_index]
         line_index = line_index + 1
         if line.startswith('>'):
-            name = re.search(r"^>(\w+)", line)[1]
+            name = re.search(r"^>\w+\|(\w+)", line)[1]
             if not name:
                 print(f"{name} cannot be empty", file=sys.stderr)
                 continue

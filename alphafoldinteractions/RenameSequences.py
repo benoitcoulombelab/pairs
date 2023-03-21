@@ -9,7 +9,7 @@ def main():
                         help="FASTA file")
     parser.add_argument('-g', '--gene', default=".*",
                         help="Gene regex (default: %(default)s)")
-    parser.add_argument('outfile', nargs='?', default=sys.stdout,
+    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout,
                         help="Output file")
 
     args = parser.parse_args()

@@ -21,7 +21,6 @@ setup(
             "count-interactions = alphafoldinteractions.CountInteractions:main",
             "keep-gene-proteins = alphafoldinteractions.KeepGeneProteins:main",
             "merge-fastas = alphafoldinteractions.MergeFastas:main",
-            "rename-sequences = alphafoldinteractions.RenameSequences:main",
             "split-fasta = alphafoldinteractions.SplitFasta:main"
         ]
     }

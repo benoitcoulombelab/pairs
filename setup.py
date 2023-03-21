@@ -18,7 +18,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "count-interactions = alphafoldinteractions.CountInteractions:main"
+            "count-interactions = alphafoldinteractions.CountInteractions:main",
+            "keep-gene-proteins = alphafoldinteractions.KeepGeneProteins:main"
         ]
     }
 )

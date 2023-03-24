@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="AlphaFoldInteractions",
+    name="DeepProteinConnector",
     version="1.0-SNAPSHOT",
     packages=find_packages(),
     author="Christian Poitras",
     author_email="christian.poitras@ircm.qc.ca",
     description="Find interactions using AlphaFold",
     keywords="bioinformatics, AlphaFold",
-    url="https://github.com/benoitcoulombelab/alphafold-interactions.git",
+    url="https://github.com/benoitcoulombelab/DeepProteinConnector.git",
     license="GNU General Public License version 3",
     classifiers=[
         "License :: OSI Approved :: GNU General Public License version 3"
@@ -18,10 +18,10 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "count-interactions = alphafoldinteractions.CountInteractions:main",
-            "keep-gene-proteins = alphafoldinteractions.KeepGeneProteins:main",
-            "merge-fastas = alphafoldinteractions.MergeFastas:main",
-            "split-fasta = alphafoldinteractions.SplitFasta:main"
+            "count-interactions = DeepProteinConnector.CountInteractions:main",
+            "keep-gene-proteins = DeepProteinConnector.KeepGeneProteins:main",
+            "merge-fastas = DeepProteinConnector.MergeFastas:main",
+            "split-fasta = DeepProteinConnector.SplitFasta:main"
         ]
     }
 )

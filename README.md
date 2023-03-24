@@ -1,4 +1,4 @@
-# AlphaFold Interactions
+# DeepProteinConnector
 
 ### This software tries to guess which proteins interact with a protein of interest using AlphaFold multimer
 
@@ -8,8 +8,8 @@ Install requirements:
 * [python version 3.7.4 or newer](https://www.python.org)
 * [Git](https://git-scm.com)
 
-Install robtools.
+Install DeepProteinConnector.
 
 ```shell
-pip install https://github.com/benoitcoulombelab/alphafold-interactions.git
+pip install https://github.com/benoitcoulombelab/DeepProteinConnector.git
 ```

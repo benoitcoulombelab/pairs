@@ -11,5 +11,5 @@ Install requirements:
 Install DeepProteinConnector.
 
 ```shell
-pip install https://github.com/benoitcoulombelab/DeepProteinConnector.git
+pip install git+https://github.com/benoitcoulombelab/DeepProteinConnector.git
 ```

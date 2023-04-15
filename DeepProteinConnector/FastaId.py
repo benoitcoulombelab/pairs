@@ -18,17 +18,42 @@ def main():
 
     args = parser.parse_args()
 
-    patterns = [r"[\w]+\|[\w]+\|([\w]+)", r"[\w]+\|([\w]+)", r"([\w]+)"]
-    if args.gene:
-        patterns.insert(0, r"GN=([\w]+)")
     for line in args.infile:
         if line.startswith('>'):
-            for pattern in patterns:
-                re_search = re.search(pattern, line)
-                if re_search:
-                    print(f"{re_search[1]}")
-                    sys.exit(0)
-    sys.exit(1, "Could not find any id")
+            sequence_name = line
+
+    if not sequence_name:
+        sys.exit(1, "Could not find sequence name starting with '>'")
+
+    sequence_id = fasta_id(sequence_name, args.gene)
+    if id:
+        print(sequence_id)
+        sys.exit(0)
+    else:
+        sys.exit(1, "Could not find any id in sequence name")
+
+
+def fasta_id(sequence_name, gene=False):
+    """
+    Returns sequence accession/id from the sequence name.
+
+    When possible, an accession number will be returned.
+    Accession number is assumed to be the third element like P24928 in sp|P24928|RPB1_HUMAN.
+
+    If there is no third element, the second is used, otherwise the first is used.
+
+    :param sequence_name: Sequence name - the complete line of FASTA starting with '>'
+    :param gene: If True, will return the gene name if found
+    :return: Sequence id from the sequence name
+    """
+    patterns = [r"[\w]+\|[\w]+\|([\w]+)", r"[\w]+\|([\w]+)", r"([\w]+)"]
+    if gene:
+        patterns.insert(0, r"GN=([\w]+)")
+    for pattern in patterns:
+        re_search = re.search(pattern, sequence_name)
+        if re_search:
+            return f"{re_search[1]}"
+    return None
 
 
 if __name__ == '__main__':

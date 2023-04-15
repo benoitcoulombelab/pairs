@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="DeepProteinConnector",
-    version="1.0-SNAPSHOT",
+    version="0.1",
     packages=find_packages(),
     author="Christian Poitras",
     author_email="christian.poitras@ircm.qc.ca",

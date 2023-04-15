@@ -20,6 +20,7 @@ setup(
         "console_scripts": [
             "count-interactions = DeepProteinConnector.CountInteractions:main",
             "fasta-id = DeepProteinConnector.FastaId:main",
+            "fasta-pairs = DeepProteinConnector.FastaPairs:main",
             "keep-gene-proteins = DeepProteinConnector.KeepGeneProteins:main",
             "merge-fastas = DeepProteinConnector.MergeFastas:main",
             "split-fasta = DeepProteinConnector.SplitFasta:main"

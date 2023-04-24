@@ -68,7 +68,7 @@ def main():
         args.output.write(f"{gene_1}")
         for gene_2 in gene_2_list:
             count = matrix[gene_1][gene_2] if gene_2 in matrix[gene_1] else None
-            args.output.write(f"\t{count if count else ''}")
+            args.output.write(f"\t{count if count is not None else ''}")
         args.output.write('\n')
 
 

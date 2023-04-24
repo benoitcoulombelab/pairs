@@ -42,7 +42,7 @@ def main():
             gene_2_set.add(gene_2)
             if args.unique:
                 gene_2_set.add(gene_1)
-            count = columns[2]
+            count = int(columns[2])
             if gene_1 not in matrix:
                 matrix[gene_1] = {}
             if args.unique and gene_2 not in matrix:

@@ -15,18 +15,21 @@ def potential_interactor_atoms(chain):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Counts the number of potentials interactions between " +
+    parser = argparse.ArgumentParser(description="Counts the number of potentials interactions between "
                                                  "residues of two proteins.")
     parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help="PDB file created by AlphaFold containing two proteins of interest")
     parser.add_argument('-n', '--name',
                         help="Name of structure in PDB file (default: PDB filename or 'Unknown' if standard input)")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
-                        help="Distance between atoms from different residues to assume interaction (default: %(default)s)")
+                        help="Distance between atoms from different residues to assume interaction "
+                             "(default: %(default)s)")
     parser.add_argument('-R', '--residues', type=argparse.FileType('w'), metavar="RESIDUES",
                         help="Save pairs of residues in tab separated file %(metavar)s")
     parser.add_argument('-A', '--atoms', type=argparse.FileType('w'), metavar="ATOMS",
                         help="Save pairs of atoms in tab separated file %(metavar)s")
+    parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
+                        help="Output file where to write number of potentials interactions")
 
     args = parser.parse_args()
     if not args.name:
@@ -45,7 +48,7 @@ def main():
     interactions = interactions_search.search_all(args.radius, level='R')
     interactions = [residue_pair for residue_pair in interactions if residue_pair[0].get_parent() != residue_pair[1].get_parent()]
 
-    print(f"{len(interactions)}")
+    args.output.write(f"{len(interactions)}")
 
     if args.residues:
         args.residues.write("Chain A\tResidue number A\tResidue name A\tChain B\tResidue number B\tResidue name B\n")

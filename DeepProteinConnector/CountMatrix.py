@@ -31,43 +31,43 @@ def main():
         mappings[source] = converted
 
     matrix = {}
-    gene_2_set = set()
+    target_set = set()
     for infile in args.infile:
         for line in infile:
-            if line.startswith('#') or line.startswith('Gene1'):
+            if line.startswith('#'):
                 continue
             columns = line.rstrip('\r\n').split('\t')
-            gene_1 = mappings[columns[0]]
-            gene_2 = mappings[columns[1]]
-            gene_2_set.add(gene_2)
+            bait = mappings[columns[0]]
+            target = mappings[columns[1]]
+            target_set.add(target)
             if args.unique:
-                gene_2_set.add(gene_1)
+                target_set.add(bait)
             count = int(columns[2])
-            if gene_1 not in matrix:
-                matrix[gene_1] = {}
-            if args.unique and gene_2 not in matrix:
-                matrix[gene_2] = {}
-            if gene_2 not in matrix[gene_1]:
-                matrix[gene_1][gene_2] = count
-            if args.unique and gene_1 not in matrix[gene_2]:
-                matrix[gene_2][gene_1] = count
-            matrix[gene_1][gene_2] = max(matrix[gene_1][gene_2], count)
+            if bait not in matrix:
+                matrix[bait] = {}
+            if args.unique and target not in matrix:
+                matrix[target] = {}
+            if target not in matrix[bait]:
+                matrix[bait][target] = count
+            if args.unique and bait not in matrix[target]:
+                matrix[target][bait] = count
+            matrix[bait][target] = max(matrix[bait][target], count)
             if args.unique:
-                matrix[gene_2][gene_1] = max(matrix[gene_2][gene_1], count)
+                matrix[target][bait] = max(matrix[target][bait], count)
 
-    gene_1_list = list(matrix)
-    gene_1_list.sort()
-    gene_2_list = list(gene_2_set)
-    gene_2_list.sort()
+    bait_list = list(matrix)
+    bait_list.sort()
+    target_list = list(target_set)
+    target_list.sort()
 
     args.output.write("Bait")
-    for gene in gene_2_list:
+    for gene in target_list:
         args.output.write(f"\t{gene}")
     args.output.write('\n')
-    for gene_1 in gene_1_list:
-        args.output.write(f"{gene_1}")
-        for gene_2 in gene_2_list:
-            count = matrix[gene_1][gene_2] if gene_2 in matrix[gene_1] else None
+    for bait in bait_list:
+        args.output.write(f"{bait}")
+        for target in target_list:
+            count = matrix[bait][target] if target in matrix[bait] else None
             args.output.write(f"\t{count if count is not None else ''}")
         args.output.write('\n')
 

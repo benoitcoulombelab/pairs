@@ -1,6 +1,6 @@
 import argparse
-import sys
 import os
+import sys
 
 from Bio.PDB import PDBParser, NeighborSearch
 
@@ -29,23 +29,31 @@ def main():
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
+    count = count_interactions(args.infile, args.name, args.radius, args.residues, args.atoms)
+    args.output.write(f"{count}\n")
+
+
+def count_interactions(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
+                       residues: "File where to save pairs of residues" = None,
+                       atoms: "File where to save pairs of atoms" = None) -> int:
+    """Count number of interactions of PDB file"""
     parser = PDBParser()
-    structure = parser.get_structure(args.name, args.infile)
+    structure = parser.get_structure(name, pdb)
 
     atoms_a = potential_interactor_atoms(structure[0]["A"])
     atoms_b = potential_interactor_atoms(structure[0]["B"])
 
     neighbor_search = NeighborSearch(atoms_a + atoms_b)
-    interactions = search_interactions(neighbor_search, args.radius, level='R')
+    interactions = search_interactions(neighbor_search, radius, level='R')
 
-    args.output.write(f"{len(interactions)}\n")
+    if residues:
+        write_residues(interactions, radius, residues)
 
-    if args.residues:
-        write_residues(interactions, args.radius, args.residues)
+    if atoms:
+        interactions = search_interactions(neighbor_search, radius, level='A')
+        write_atoms(interactions, radius, atoms)
 
-    if args.atoms:
-        interactions = search_interactions(neighbor_search, args.radius, level='A')
-        write_atoms(interactions, args.radius, args.atoms)
+    return len(interactions)
 
 
 def potential_interactor_atoms(chain: "chain from PDB file") -> "list of atoms that can interact with other atoms":

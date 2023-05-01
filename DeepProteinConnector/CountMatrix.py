@@ -33,6 +33,7 @@ def main():
     matrix = {}
     target_set = set()
     for infile in args.infile:
+        infile.readline()  # Skip header
         for line in infile:
             if line.startswith('#'):
                 continue

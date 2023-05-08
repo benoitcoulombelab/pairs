@@ -37,6 +37,7 @@ def main():
     args = parser.parse_args()
 
     mappings = {}
+    args.mapping.readline()
     for line in args.mapping:
         if line.startswith('#'):
             continue

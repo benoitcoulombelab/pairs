@@ -28,7 +28,7 @@ def main():
 
     args = parser.parse_args()
 
-    args.output.write("#Bait\tTarget\tCount\n")
+    args.output.write("Bait\tTarget\tCount\n")
     for infile in args.infile:
         re_match = re.search(args.name, infile)
         if not re_match:

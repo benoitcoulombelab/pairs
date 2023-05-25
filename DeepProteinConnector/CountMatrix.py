@@ -24,7 +24,7 @@ def main():
                              "   (default: %(default)s)")
     parser.add_argument('-w', '--weight', type=int,
                         help="Column index of weights used for normalization - 1 means first column of file" +
-                             "   (default: %(default)s)")
+                             "   (default: not used)")
     parser.add_argument('-b', '--base', type=float, default=1.0,
                         help="Base value for normalization - values are multiplied by "
                              "'base_weight / log2(sum weight of both proteins)' " +
@@ -74,18 +74,20 @@ def main():
                 matrix[target][bait] = max(matrix[target][bait], count)
 
     bait_list = list(matrix)
-    bait_list.sort(key=lambda m: mappings[m].converted)
     target_list = list(target_set)
+    bait_list.sort(key=lambda m: mappings[m].converted)
     target_list.sort(key=lambda m: mappings[m].converted)
 
     args.output.write("Bait")
+    if args.weight:
+        args.output.write("\tWeight")
     for target in target_list:
         target_mapping = mappings[target]
         args.output.write(f"\t{target_mapping.converted}")
     args.output.write('\n')
     for bait in bait_list:
         bait_mapping = mappings[bait]
-        args.output.write(f"{bait_mapping.converted}")
+        args.output.write(f"{bait_mapping.converted}\t{bait_mapping.weight}")
         for target in target_list:
             target_mapping = mappings[target]
             count = matrix[bait][target] if target in matrix[bait] else None

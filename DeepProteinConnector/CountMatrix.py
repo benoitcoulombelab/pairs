@@ -36,16 +36,7 @@ def main():
 
     args = parser.parse_args()
 
-    mappings = {}
-    args.mapping.readline()
-    for line in args.mapping:
-        if line.startswith('#'):
-            continue
-        columns = line.rstrip('\r\n').split('\t')
-        source = columns[args.source - 1]
-        converted = columns[args.converted - 1]
-        weight = float(columns[args.weight - 1]) if args.weight else None
-        mappings[source] = Mapping(source, converted, weight)
+    mappings = parse_mappings(args.mapping, args.source, args.converted, args.weight)
 
     matrix = {}
     target_set = set()
@@ -95,6 +86,21 @@ def main():
                 count = count * args.base / math.log2(bait_mapping.weight + target_mapping.weight)
             args.output.write(f"\t{count if count is not None else ''}")
         args.output.write('\n')
+
+
+def parse_mappings(mappings_file: "Mapping file", source: "Column index of source ids" = 1,
+                   converted: "Column index of converted ids" = 2,
+                   weight: "Column index of weights" = None) -> "Mappings":
+    mappings = {}
+    mappings_file.readline()
+    for line in mappings_file:
+        if line.startswith('#'):
+            continue
+        columns = line.rstrip('\r\n').split('\t')
+        m_source = columns[source - 1]
+        mappings[m_source] = Mapping(m_source, columns[converted - 1],
+                                     float(columns[weight - 1]) if weight else None)
+    return mappings
 
 
 if __name__ == '__main__':

@@ -70,15 +70,17 @@ def main():
     target_list.sort(key=lambda m: mappings[m].converted)
 
     args.output.write("Bait")
-    if args.weight:
-        args.output.write("\tWeight")
     for target in target_list:
         target_mapping = mappings[target]
         args.output.write(f"\t{target_mapping.converted}")
+        if args.weight:
+            args.output.write(f" ({target_mapping.weight}Da)")
     args.output.write('\n')
     for bait in bait_list:
         bait_mapping = mappings[bait]
-        args.output.write(f"{bait_mapping.converted}\t{bait_mapping.weight}")
+        args.output.write(f"{bait_mapping.converted}")
+        if args.weight:
+            args.output.write(f" ({bait_mapping.weight}Da)")
         for target in target_list:
             target_mapping = mappings[target]
             count = matrix[bait][target] if target in matrix[bait] else None

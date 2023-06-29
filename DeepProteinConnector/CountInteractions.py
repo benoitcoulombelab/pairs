@@ -47,11 +47,11 @@ def count_interactions(pdb: "PDB file", name: "structure name" = "Unknown", radi
     interactions = search_interactions(neighbor_search, radius, level='R')
 
     if residues:
-        write_residues(interactions, radius, residues)
+        write_residues(interactions, residues)
 
     if atoms:
         interactions = search_interactions(neighbor_search, radius, level='A')
-        write_atoms(interactions, radius, atoms)
+        write_atoms(interactions, atoms)
 
     return len(interactions)
 

@@ -1,8 +1,10 @@
 import argparse
+import math
 import os
 import sys
 
 from Bio.PDB import PDBParser, NeighborSearch
+from Bio.SeqUtils import molecular_weight, seq1
 
 
 def main():
@@ -15,6 +17,9 @@ def main():
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
+    parser.add_argument('-w', '--weight', action="store_true", default=False,
+                        help="Normalize count by protein pair weight - "
+                             "'count / log2(sum weight of both proteins)'")
     parser.add_argument('-R', '--residues', type=argparse.FileType('w'), metavar="RESIDUES",
                         help="Save pairs of residues in tab separated file %(metavar)s")
     parser.add_argument('-A', '--atoms', type=argparse.FileType('w'), metavar="ATOMS",
@@ -29,11 +34,12 @@ def main():
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
-    count = count_interactions(args.infile, args.name, args.radius, args.residues, args.atoms)
+    count = count_interactions(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
     args.output.write(f"{count}\n")
 
 
 def count_interactions(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
+                       weight: "Normalize count by protein weight" = False,
                        residues: "File where to save pairs of residues" = None,
                        atoms: "File where to save pairs of atoms" = None) -> int:
     """Count number of interactions of PDB file"""
@@ -53,7 +59,13 @@ def count_interactions(pdb: "PDB file", name: "structure name" = "Unknown", radi
         interactions = search_interactions(neighbor_search, radius, level='A')
         write_atoms(interactions, atoms)
 
-    return len(interactions)
+    protein_pair_weight = 1
+    if weight:
+        protein_pair_weight = 0
+        for chain_name in ["A", "B"]:
+            protein_sequence = seq1("".join(residue.get_resname() for residue in structure[0][chain_name]))
+            protein_pair_weight = protein_pair_weight + molecular_weight(protein_sequence, seq_type="protein")
+    return len(interactions) / math.log2(protein_pair_weight)
 
 
 def potential_interactor_atoms(chain: "chain from PDB file") -> "list of atoms that can interact with other atoms":

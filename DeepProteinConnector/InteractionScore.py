@@ -34,14 +34,14 @@ def main():
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
-    count = count_interactions(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
+    count = interaction_score(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
     args.output.write(f"{count}\n")
 
 
-def count_interactions(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
-                       weight: "Normalize count by protein weight" = False,
-                       residues: "File where to save pairs of residues" = None,
-                       atoms: "File where to save pairs of atoms" = None) -> int:
+def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
+                      weight: "Normalize count by protein weight" = False,
+                      residues: "File where to save pairs of residues" = None,
+                      atoms: "File where to save pairs of atoms" = None) -> int:
     """Count number of interactions of PDB file"""
     parser = PDBParser()
     structure = parser.get_structure(name, pdb)

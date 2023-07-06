@@ -3,7 +3,7 @@ import os
 import re
 import sys
 
-from DeepProteinConnector import CountInteractions
+from DeepProteinConnector import InteractionScore
 
 
 def file_path(string):
@@ -41,7 +41,7 @@ def main():
 
 def count_interactions(pdb: "PDB file", radius: float = 6) -> int:
     """Count number of interactions in PDB file"""
-    return CountInteractions.count_interactions(pdb, radius=radius)
+    return InteractionScore.interaction_score(pdb, radius=radius)
 
 
 if __name__ == '__main__':

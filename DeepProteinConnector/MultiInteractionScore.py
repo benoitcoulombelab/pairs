@@ -23,6 +23,9 @@ def main():
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
+    parser.add_argument('-w', '--weight', action="store_true", default=False,
+                        help="Normalize count by protein pair weight - "
+                             "'count / log2(sum weight of both proteins)'")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Tab delimited output file containing counts")
 
@@ -35,13 +38,14 @@ def main():
             raise AssertionError(f"Expression {args.name} cannot be found in filename {infile}")
         bait = re_match.group(1)
         target = re_match.group(2)
-        count = interaction_score(infile, args.radius)
+        count = interaction_score(infile, args.radius, args.weight)
         args.output.write(f"{bait}\t{target}\t{count}\n")
 
 
-def interaction_score(pdb: "PDB file", radius: float = 6) -> int:
+def interaction_score(pdb: "PDB file", radius: float = 6,
+                      weight: "Normalize count by protein weight" = False) -> float:
     """Count number of interactions in PDB file"""
-    return InteractionScore.interaction_score(pdb, radius=radius)
+    return InteractionScore.interaction_score(pdb, radius=radius, weight=weight)
 
 
 if __name__ == '__main__':

@@ -35,11 +35,11 @@ def main():
             raise AssertionError(f"Expression {args.name} cannot be found in filename {infile}")
         bait = re_match.group(1)
         target = re_match.group(2)
-        count = count_interactions(infile, args.radius)
+        count = interaction_score(infile, args.radius)
         args.output.write(f"{bait}\t{target}\t{count}\n")
 
 
-def count_interactions(pdb: "PDB file", radius: float = 6) -> int:
+def interaction_score(pdb: "PDB file", radius: float = 6) -> int:
     """Count number of interactions in PDB file"""
     return InteractionScore.interaction_score(pdb, radius=radius)
 

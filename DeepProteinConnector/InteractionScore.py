@@ -41,7 +41,7 @@ def main():
 def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
                       weight: "Normalize count by protein weight" = False,
                       residues: "File where to save pairs of residues" = None,
-                      atoms: "File where to save pairs of atoms" = None) -> int:
+                      atoms: "File where to save pairs of atoms" = None) -> float:
     """Count number of interactions of PDB file"""
     parser = PDBParser()
     structure = parser.get_structure(name, pdb)

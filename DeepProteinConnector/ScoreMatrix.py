@@ -11,7 +11,7 @@ class Mapping:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate count matrix from DeepProteinConnector counts.")
+    parser = argparse.ArgumentParser(description="Generate score matrix from MultiInteractionScore's output.")
     parser.add_argument('infile', nargs='*', type=argparse.FileType('r'), default=sys.stdin,
                         help="Tab delimited text file containing protein id/accession and counts")
     parser.add_argument('-m', '--mapping', type=argparse.FileType('r'), default="mapping.txt",

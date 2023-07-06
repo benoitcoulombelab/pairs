@@ -18,12 +18,12 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "count-matrix = DeepProteinConnector.CountMatrix:main",
             "fasta-id = DeepProteinConnector.FastaId:main",
             "fasta-pairs = DeepProteinConnector.FastaPairs:main",
             "interaction-score = DeepProteinConnector.InteractionScore:main",
             "keep-gene-proteins = DeepProteinConnector.KeepGeneProteins:main",
             "multi-interaction-score = DeepProteinConnector.MultiInteractionScore:main",
+            "score-matrix = DeepProteinConnector.ScoreMatrix:main",
         ]
     }
 )

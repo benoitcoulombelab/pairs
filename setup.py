@@ -23,7 +23,6 @@ setup(
             "fasta-pairs = DeepProteinConnector.FastaPairs:main",
             "interaction-score = DeepProteinConnector.InteractionScore:main",
             "keep-gene-proteins = DeepProteinConnector.KeepGeneProteins:main",
-            "merge-fastas = DeepProteinConnector.MergeFastas:main",
             "multi-interaction-score = DeepProteinConnector.MultiInteractionScore:main",
         ]
     }

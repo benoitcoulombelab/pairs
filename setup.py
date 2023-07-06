@@ -25,7 +25,6 @@ setup(
             "keep-gene-proteins = DeepProteinConnector.KeepGeneProteins:main",
             "merge-fastas = DeepProteinConnector.MergeFastas:main",
             "multi-interaction-score = DeepProteinConnector.MultiInteractionScore:main",
-            "split-fasta = DeepProteinConnector.SplitFasta:main"
         ]
     }
 )

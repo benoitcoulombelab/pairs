@@ -2,7 +2,7 @@ import argparse
 import os
 
 from Bio import SeqIO
-from DeepProteinConnector import FastaId
+from afpairs import FastaId
 
 
 def dir_path(string):

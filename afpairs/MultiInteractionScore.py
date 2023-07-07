@@ -3,7 +3,7 @@ import os
 import re
 import sys
 
-from DeepProteinConnector import InteractionScore
+from afpairs import InteractionScore
 
 
 def file_path(string):

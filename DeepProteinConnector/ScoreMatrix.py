@@ -51,7 +51,7 @@ def main():
             target_set.add(target)
             if args.unique:
                 target_set.add(bait)
-            count = int(columns[2])
+            count = float(columns[2])
             if bait not in matrix:
                 matrix[bait] = {}
             if args.unique and target not in matrix:

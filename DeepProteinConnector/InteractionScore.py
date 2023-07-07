@@ -59,13 +59,14 @@ def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radiu
         interactions = search_interactions(neighbor_search, radius, level='A')
         write_atoms(interactions, atoms)
 
-    protein_pair_weight = 1
     if weight:
         protein_pair_weight = 0
         for chain_name in ["A", "B"]:
             protein_sequence = seq1("".join(residue.get_resname() for residue in structure[0][chain_name]))
             protein_pair_weight = protein_pair_weight + molecular_weight(protein_sequence, seq_type="protein")
-    return len(interactions) / math.log2(protein_pair_weight)
+        return len(interactions) / math.log2(protein_pair_weight)
+    else:
+        return len(interactions)
 
 
 def potential_interactor_atoms(chain: "chain from PDB file") -> "list of atoms that can interact with other atoms":

@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
 #SBATCH --mail-type=NONE
-#SBATCH --output=deepproteinconnector-count-%A.out
+#SBATCH --output=alphafold-pairs-count-%A.out
 
 # exit when any command fails
 set -e
@@ -13,7 +13,7 @@ set -e
 if [ -n "$CC_CLUSTER" ]
 then
   module -q purge
-  module -q load deepproteinconnector/1.0
+  module -q load alphafold-pairs/1.0
 fi
 
 ranked_0_files_raw=$(find . -type f -name "ranked_0.pdb")

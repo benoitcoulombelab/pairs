@@ -4,7 +4,7 @@ params.outdir = "$baseDir"
 params.step = "all"
 
 log.info """\
-         Deep Protein Connector
+         AlphaFold-pairs
          ===================================
          baits   : ${params.baits}
          targets : ${params.targets}

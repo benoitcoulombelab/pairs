@@ -34,8 +34,8 @@ def main():
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
-    count = interaction_score(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
-    args.output.write(f"{count}\n")
+    score = interaction_score(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
+    args.output.write(f"{score}\n")
 
 
 def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,

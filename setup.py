@@ -18,6 +18,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
+            "delete-fasta = afpairs.DeleteFasta:main",
             "fasta-id = afpairs.FastaId:main",
             "fasta-pairs = afpairs.FastaPairs:main",
             "interaction-score = afpairs.InteractionScore:main",

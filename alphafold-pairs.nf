@@ -6,17 +6,14 @@ params.step = "all"
 log.info """\
          AlphaFold-pairs
          ===================================
-         baits   : ${params.baits}
-         targets : ${params.targets}
+         fasta   : ${params.fasta}
          step    : ${params.step}
          outdir  : ${params.outdir}
          """
         .stripIndent()
 
 workflow {
-  baits = Channel.fromPath(params.baits, checkIfExists: params.step != "alphafold")
-  targets = Channel.fromPath(params.targets, checkIfExists: params.step != "alphafold")
-  fasta = fasta_pairs(baits, targets) | flatten
+  fasta = Channel.fromPath(params.fasta, checkIfExists: true)
   if (params.step != "alphafold") {
     fasta_prepare = prepare_alphafold(fasta)
   }
@@ -26,20 +23,6 @@ workflow {
   if (params.step != "prepare") {
     alphafold(fasta_prepare)
   }
-}
-
-process fasta_pairs {
-  input:
-  file(baits)
-  file(targets)
-
-  output:
-  file("proteins/*.fasta")
-
-  """
-  mkdir proteins
-  fasta-pairs --baits ${baits} --targets ${targets} --output proteins -u -i
-  """
 }
 
 process prepare_alphafold {

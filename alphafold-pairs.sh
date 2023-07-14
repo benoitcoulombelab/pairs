@@ -20,7 +20,7 @@ fi
 export NXF_OPTS="-Xms500M -Xmx8000M"
 
 nextflow run alphafold-pairs.nf \
-    --baits baits.fasta --targets targets.fasta \
+    --fasta "fasta_pairs/*.fasta" \
     --outdir "$PWD/output" \
     -c alliancecan.config \
     "$@"

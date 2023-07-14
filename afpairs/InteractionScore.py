@@ -3,7 +3,7 @@ import math
 import os
 import sys
 
-from Bio.PDB import PDBParser, NeighborSearch
+from Bio.PDB import PDBParser, NeighborSearch, Residue
 from Bio.SeqUtils import molecular_weight, seq1
 
 
@@ -14,6 +14,8 @@ def main():
                         help="PDB file created by AlphaFold containing two proteins of interest")
     parser.add_argument('-n', '--name',
                         help="Name of structure in PDB file (default: PDB filename or 'Unknown' if standard input)")
+    parser.add_argument('-c', '--count', action="store_true", default=False,
+                        help="Score is the number of residues at a distance less than radius parameter")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
@@ -34,11 +36,13 @@ def main():
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
-    score = interaction_score(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
+    score = interaction_score(args.infile, args.name, args.count, args.radius, args.weight, args.residues, args.atoms)
     args.output.write(f"{score}\n")
 
 
-def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
+def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown",
+                      count: "If True, score is the number of residues below radius" = False,
+                      radius: float = 6,
                       weight: "Normalize count by protein weight" = False,
                       residues: "File where to save pairs of residues" = None,
                       atoms: "File where to save pairs of atoms" = None) -> float:
@@ -59,20 +63,39 @@ def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radiu
         interactions = search_interactions(neighbor_search, radius, level='A')
         write_atoms(interactions, atoms)
 
+    if count:
+        score = len(interactions)
+    else:
+        score = 0
+        for interaction in interactions:
+            distance = minimal_distance(interaction[0], interaction[1])
+            score = score + 1 / distance
     if weight:
         protein_pair_weight = 0
         for chain_name in ["A", "B"]:
             protein_sequence = seq1("".join(residue.get_resname() for residue in structure[0][chain_name]))
             protein_pair_weight = protein_pair_weight + molecular_weight(protein_sequence, seq_type="protein")
-        return len(interactions) / math.log2(protein_pair_weight)
+        return score / math.log2(protein_pair_weight)
     else:
-        return len(interactions)
+        return score
 
 
-def potential_interactor_atoms(chain: "chain from PDB file") -> "list of atoms that can interact with other atoms":
+def minimal_distance(residue_a: Residue.Residue, residue_b: Residue.Residue) -> float:
+    atoms_a = potential_interactor_atoms(residue_a)
+    atoms_b = potential_interactor_atoms(residue_b)
+    min_distance = atoms_a[0] - atoms_b[0]
+    for atom_a in atoms_a:
+        for atom_b in atoms_b:
+            min_distance = min(atom_a - atom_b, min_distance)
+    return min_distance
+
+
+def potential_interactor_atoms(
+        pdb_element: "element from PDB file") -> "list of atoms that can interact with other atoms":
     """Returns list of atoms that can interact with other atoms"""
     atoms = []
-    for residue in chain:
+    residues = [pdb_element] if isinstance(pdb_element, Residue.Residue) else pdb_element.get_residues()
+    for residue in residues:
         for atom in residue:
             if atom.get_name() not in ["N", "CA", "C", "O", "OXT"] and not atom.get_name().startswith("H"):
                 atoms.append(atom)

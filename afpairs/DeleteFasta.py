@@ -3,7 +3,6 @@ import os
 import shutil
 
 from Bio import SeqIO
-from afpairs import FastaId
 
 
 def dir_path(string):
@@ -13,7 +12,7 @@ def dir_path(string):
         raise NotADirectoryError(string)
 
 
-def main():
+def main(argv: list[str] = None):
     parser = argparse.ArgumentParser(description="Deletes FASTA files that fails any specified limits.")
     parser.add_argument('inputs', nargs='*',
                         help="FASTA files")
@@ -22,26 +21,42 @@ def main():
     parser.add_argument('-b', '--backup', type=dir_path, default=None,
                         help="Copy FASTA files that are to be deleted to this folder for backup")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    for fasta in args.inputs:
+    delete_fasta(inputs=args.inputs, length=args.length, backup=args.backup)
+
+
+def delete_fasta(inputs: list[str] = [], length: int = None, backup: str = None):
+    """
+    Deletes FASTA files if they fail any condition.
+
+    :param inputs: FASTA files
+    :param length: maximum length of the sum of all sequence lengths
+    :param backup: FASTA files that are to be deleted will be moved to this folder instead
+    """
+    for fasta in inputs:
         delete = False
         sequences = parse_fasta(fasta)
-        if args.length:
-            length = sum([len(sequences[seq_id]) for seq_id in sequences])
-            if length > args.length:
+        if length:
+            fasta_length = sum([len(sequence) for sequence in sequences])
+            if fasta_length > length:
                 delete = True
         if delete:
-            if args.backup:
-                shutil.copyfile(fasta, os.path.join(args.backup, os.path.basename(fasta)))
+            if backup:
+                shutil.copyfile(fasta, os.path.join(backup, os.path.basename(fasta)))
             os.remove(fasta)
 
 
-def parse_fasta(fasta):
-    sequences = {}
+def parse_fasta(fasta: str) -> list:
+    """
+    Returns sequences read from FASTA file.
+
+    :param fasta: FASTA file
+    :return: sequences read from FASTA file
+    """
+    sequences = []
     for record in SeqIO.parse(fasta, "fasta"):
-        seq_id = FastaId.fasta_id(record.description)
-        sequences[seq_id] = record
+        sequences.append(record)
     return sequences
 
 

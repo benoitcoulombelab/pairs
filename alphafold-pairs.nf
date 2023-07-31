@@ -55,8 +55,6 @@ process alphafold {
 
   script:
   """
-    echo ${fasta}
-    echo ${prepare}
     mkdir alphafold
     cp -r ${prepare} alphafold
     rm -r ${prepare}

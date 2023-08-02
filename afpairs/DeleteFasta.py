@@ -23,6 +23,8 @@ def main(argv: list[str] = None):
                         help="Sequence must be valid")
     parser.add_argument('-l', '--length', type=int, default=None,
                         help="Maximum length")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help="Verbose - show name of delete FASTA files")
     parser.add_argument('-b', '--backup', type=dir_path, default=None,
                         help="Copy FASTA files that are to be deleted to this folder for backup")
 
@@ -31,7 +33,8 @@ def main(argv: list[str] = None):
     delete_fasta(inputs=args.inputs, invalid_sequence=args.sequence, length=args.length, backup=args.backup)
 
 
-def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length: int = None, backup: str = None):
+def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length: int = None, backup: str = None,
+                 verbose: bool = False):
     """
     Deletes FASTA files if they fail any condition.
 
@@ -39,16 +42,24 @@ def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length:
     :param invalid_sequence: delete if sequence is invalid
     :param length: maximum length of the sum of all sequence lengths
     :param backup: FASTA files that are to be deleted will be moved to this folder instead
+    :param verbose: print why files are deleted
     """
     for fasta in inputs:
         delete = False
         sequences = parse_fasta(fasta)
         if invalid_sequence:
-            delete = delete or [sequence for sequence in sequences if
+            invalid_sequence = [sequence for sequence in sequences if
                                 re.match(VALID_AMINO_ACID_REGEX, str(sequence.seq)) is None]
+            if invalid_sequence:
+                if verbose:
+                    print(f"Invalid sequence {invalid_sequence[0].name} in FASTA file {fasta}")
+                delete = True
         if length:
             fasta_length = sum([len(sequence) for sequence in sequences])
-            delete = delete or fasta_length > length
+            if fasta_length > length:
+                if verbose:
+                    print(f"Sequence length {fasta_length} above maximum {length} in FASTA file {fasta}")
+                delete = True
         if delete:
             if backup:
                 shutil.copyfile(fasta, os.path.join(backup, os.path.basename(fasta)))

@@ -20,24 +20,27 @@ def mock_testclass():
 def test_main(testdir, mock_testclass):
     DeleteFasta.delete_fasta = MagicMock()
     DeleteFasta.main(["P19388__P36954.fasta", "P19388.fasta"])
-    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"], length=None,
-                                                     backup=None)
+    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"],
+                                                     invalid_sequence=False,
+                                                     length=None, backup=None)
 
 
 def test_main_parameters(testdir, mock_testclass):
     os.mkdir("backup")
     DeleteFasta.delete_fasta = MagicMock()
-    DeleteFasta.main(["-l", "200", "-b", "backup", "P19388__P36954.fasta", "P19388.fasta"])
-    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"], length=200,
-                                                     backup="backup")
+    DeleteFasta.main(["-s", "-l", "200", "-b", "backup", "P19388__P36954.fasta", "P19388.fasta"])
+    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"],
+                                                     invalid_sequence=True,
+                                                     length=200, backup="backup")
 
 
 def test_main_long_parameters(testdir, mock_testclass):
     os.mkdir("backup")
     DeleteFasta.delete_fasta = MagicMock()
-    DeleteFasta.main(["--length", "200", "--backup", "backup", "P19388__P36954.fasta", "P19388.fasta"])
-    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"], length=200,
-                                                     backup="backup")
+    DeleteFasta.main(["--sequence", "--length", "200", "--backup", "backup", "P19388__P36954.fasta", "P19388.fasta"])
+    DeleteFasta.delete_fasta.assert_called_once_with(inputs=["P19388__P36954.fasta", "P19388.fasta"],
+                                                     invalid_sequence=True,
+                                                     length=200, backup="backup")
 
 
 def test_delete_fasta_no_action(testdir, mock_testclass):
@@ -50,7 +53,17 @@ def test_delete_fasta_no_action(testdir, mock_testclass):
     assert os.path.isfile("P19388.fasta")
 
 
-def test_delete_fasta_delete_all(testdir, mock_testclass):
+def test_delete_fasta_delete_invalid_sequence(testdir, mock_testclass):
+    fasta1 = Path(__file__).parent.joinpath("P01788.fasta")
+    copyfile(fasta1, "P01788.fasta")
+    fasta2 = Path(__file__).parent.joinpath("P19388.fasta")
+    copyfile(fasta2, "P19388.fasta")
+    DeleteFasta.delete_fasta(["P01788.fasta", "P19388.fasta"], invalid_sequence=True)
+    assert not os.path.isfile("P01788.fasta")
+    assert os.path.isfile("P19388.fasta")
+
+
+def test_delete_fasta_delete_length_all(testdir, mock_testclass):
     fasta1 = Path(__file__).parent.joinpath("P19388__P36954.fasta")
     copyfile(fasta1, "P19388__P36954.fasta")
     fasta2 = Path(__file__).parent.joinpath("P19388.fasta")
@@ -60,7 +73,7 @@ def test_delete_fasta_delete_all(testdir, mock_testclass):
     assert not os.path.isfile("P19388.fasta")
 
 
-def test_delete_fasta_delete_one(testdir, mock_testclass):
+def test_delete_fasta_delete_length_one(testdir, mock_testclass):
     fasta1 = Path(__file__).parent.joinpath("P19388__P36954.fasta")
     copyfile(fasta1, "P19388__P36954.fasta")
     fasta2 = Path(__file__).parent.joinpath("P19388.fasta")

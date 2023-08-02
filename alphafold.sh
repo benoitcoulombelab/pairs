@@ -8,7 +8,7 @@ output=$2
 step=${3:-all}
 max_template_date=$(date +"%Y-%m-%d")
 
-echo -e "\n\nRun AlphaFold with step ${step} on fasta ${fasta} with\n\n"
+echo -e "\n\nRun AlphaFold with step ${step} on fasta ${fasta}\n\n"
 
 # load required modules
 if [[ -n "$CC_CLUSTER" ]]
@@ -42,6 +42,7 @@ then
   gpu_parameters=("--use_gpu=False")
 fi
 
+mkdir -p "${output}"
 "${ALPHAFOLD}/venv/bin/python" "${ALPHAFOLD_DIR}/singularity/run_singularity.py" \
     --step="$step" \
     "${gpu_parameters[@]}" \

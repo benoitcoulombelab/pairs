@@ -49,11 +49,11 @@ def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length:
         delete = False
         sequences = parse_fasta(fasta)
         if invalid_sequence:
-            invalid_sequence = [sequence for sequence in sequences if
-                                re.match(VALID_AMINO_ACID_REGEX, str(sequence.seq)) is None]
-            if invalid_sequence:
+            any_invalid = [sequence for sequence in sequences if
+                           re.match(VALID_AMINO_ACID_REGEX, str(sequence.seq)) is None]
+            if any_invalid:
                 if verbose:
-                    print(f"Invalid sequence {invalid_sequence[0].name} in FASTA file {fasta}")
+                    print(f"Invalid sequence {any_invalid[0].name} in FASTA file {fasta}")
                 delete = True
         if length:
             fasta_length = sum([len(sequence) for sequence in sequences])

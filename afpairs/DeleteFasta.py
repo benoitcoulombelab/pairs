@@ -30,7 +30,8 @@ def main(argv: list[str] = None):
 
     args = parser.parse_args(argv)
 
-    delete_fasta(inputs=args.inputs, invalid_sequence=args.sequence, length=args.length, backup=args.backup)
+    delete_fasta(inputs=args.inputs, invalid_sequence=args.sequence, length=args.length, backup=args.backup,
+                 verbose=args.verbose)
 
 
 def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length: int = None, backup: str = None,

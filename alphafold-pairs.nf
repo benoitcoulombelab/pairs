@@ -27,7 +27,7 @@ workflow {
 
 process prepare_alphafold {
   publishDir "${params.outdir}", mode: "copy"
-  stageInMode = "copy"
+  stageInMode = "symlink"
 
   input:
   file(fasta)
@@ -45,7 +45,7 @@ process prepare_alphafold {
 
 process alphafold {
   publishDir "${params.outdir}", mode: "copy"
-  stageInMode = "copy"
+  stageInMode = "symlink"
 
   input:
   tuple file(fasta), file(prepare)

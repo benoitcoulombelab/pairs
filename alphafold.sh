@@ -91,8 +91,8 @@ echo "INFO: AlphaFold return code is ${alphafold_return}"
 
 if [[ -n "$SLURM_TMPDIR" ]]
 then
-  echo "Copy output from fast local storage ${SLURM_TMPDIR} to ${copy_output}"
-  cp -r "${output}/*" "$copy_output"
+  echo "Copy output from fast local storage ${output} to ${copy_output}"
+  cp -r "$output"/* "$copy_output"
 fi
 
 exit "$alphafold_return"

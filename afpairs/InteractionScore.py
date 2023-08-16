@@ -61,13 +61,15 @@ def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radiu
         proteins_atoms.extend(potential_interactor_atoms(structure[0][chain]))
 
     neighbor_search = NeighborSearch(proteins_atoms)
-    interactions = search_interactions(neighbor_search, radius, level='R')
+    interactions = search_interactions(neighbor_search, radius, level='R', first_chains=first_chains,
+                                       second_chains=second_chains)
 
     if residues:
         write_residues(interactions, residues)
 
     if atoms:
-        interactions = search_interactions(neighbor_search, radius, level='A')
+        interactions = search_interactions(neighbor_search, radius, level='A', first_chains=first_chains,
+                                           second_chains=second_chains)
         write_atoms(interactions, atoms)
 
     if weight:
@@ -90,11 +92,17 @@ def potential_interactor_atoms(chain: "chain from PDB file") -> "list of atoms t
     return atoms
 
 
-def search_interactions(neighbor_search: NeighborSearch, radius: float, level: str) -> "list of interactions":
+def search_interactions(neighbor_search: NeighborSearch, radius: float, level: str,
+                        first_chains: "Chains of first protein" = ["A"],
+                        second_chains: "Chains of second protein" = ["B"],
+                        ) -> "list of interactions":
     """Search for interactions"""
     interactions = neighbor_search.search_all(radius, level)
     interactions = [residue_pair for residue_pair in interactions
-                    if get_chain(residue_pair[0], level) != get_chain(residue_pair[1], level)]
+                    if (get_chain(residue_pair[0], level).get_id() in first_chains
+                        and get_chain(residue_pair[1], level).get_id() in second_chains)
+                    or (get_chain(residue_pair[0], level).get_id() in second_chains
+                        and get_chain(residue_pair[1], level).get_id() in first_chains)]
     return interactions
 
 

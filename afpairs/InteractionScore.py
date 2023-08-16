@@ -12,6 +12,10 @@ def main():
                                                  "residues of two proteins.")
     parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help="PDB file created by AlphaFold containing two proteins of interest")
+    parser.add_argument('-a', '--first', default="A",
+                        help="Chains of first protein separated by ','  (default: %(default)s)")
+    parser.add_argument('-b', '--second', default="B",
+                        help="Chains of second protein separated by ','  (default: %(default)s)")
     parser.add_argument('-n', '--name',
                         help="Name of structure in PDB file (default: PDB filename or 'Unknown' if standard input)")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
@@ -28,28 +32,35 @@ def main():
                         help="Output file where to write number of potentials interactions")
 
     args = parser.parse_args()
+    args.first = args.first.split(',')
+    args.second = args.second.split(',')
     if not args.name:
         if args.infile == sys.stdin:
             args.name = "Unknown"
         else:
             args.name = os.path.basename(os.path.splitext(args.infile.name)[0])
 
-    score = interaction_score(args.infile, args.name, args.radius, args.weight, args.residues, args.atoms)
+    score = interaction_score(pdb=args.infile, name=args.name, radius=args.radius, weight=args.weight,
+                              first_chains=args.first, second_chains=args.second, residues=args.residues,
+                              atoms=args.atoms)
     args.output.write(f"{score}\n")
 
 
 def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radius: float = 6,
                       weight: "Normalize count by protein weight" = False,
+                      first_chains: "Chains of first protein" = ["A"],
+                      second_chains: "Chains of second protein" = ["B"],
                       residues: "File where to save pairs of residues" = None,
                       atoms: "File where to save pairs of atoms" = None) -> float:
     """Count number of interactions of PDB file"""
     parser = PDBParser()
     structure = parser.get_structure(name, pdb)
 
-    atoms_a = potential_interactor_atoms(structure[0]["A"])
-    atoms_b = potential_interactor_atoms(structure[0]["B"])
+    proteins_atoms = []
+    for chain in first_chains + second_chains:
+        proteins_atoms.extend(potential_interactor_atoms(structure[0][chain]))
 
-    neighbor_search = NeighborSearch(atoms_a + atoms_b)
+    neighbor_search = NeighborSearch(proteins_atoms)
     interactions = search_interactions(neighbor_search, radius, level='R')
 
     if residues:
@@ -61,7 +72,7 @@ def interaction_score(pdb: "PDB file", name: "structure name" = "Unknown", radiu
 
     if weight:
         protein_pair_weight = 0
-        for chain_name in ["A", "B"]:
+        for chain_name in first_chains + second_chains:
             protein_sequence = seq1("".join(residue.get_resname() for residue in structure[0][chain_name]))
             protein_pair_weight = protein_pair_weight + molecular_weight(protein_sequence, seq_type="protein")
         return len(interactions) / math.log2(protein_pair_weight)

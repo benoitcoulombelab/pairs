@@ -53,18 +53,6 @@ fi
 
 mkdir -p "${output}"
 
-if [[ -n "$SLURM_TMPDIR" ]]
-then
-  echo "Copy data from ${output} to fast local storage ${SLURM_TMPDIR}"
-  copy_fasta="$fasta"
-  fasta="${SLURM_TMPDIR}/${fasta##*/}"
-  cp "$copy_fasta" "$fasta"
-  copy_output="$output"
-  output="${SLURM_TMPDIR}/${output##*/}"
-  cp -r "${copy_output}" "$output"
-fi
-
-set +e
 echo "Start AlphaFold using run_alphafold.py"
 run_alphafold.py \
     "${step_parameters[@]}" \
@@ -85,14 +73,3 @@ run_alphafold.py \
     --hhsearch_binary_path="${EBROOTHHMINSUITE}/bin/hhsearch" \
     --jackhmmer_binary_path="${EBROOTHMMER}/bin/jackhmmer" \
     --kalign_binary_path="${EBROOTKALIGN}/bin/kalign"
-alphafold_return=$?
-
-echo "INFO: AlphaFold return code is ${alphafold_return}"
-
-if [[ -n "$SLURM_TMPDIR" ]]
-then
-  echo "Copy output from fast local storage ${output} to ${copy_output}"
-  cp -r "$output"/* "$copy_output"
-fi
-
-exit "$alphafold_return"

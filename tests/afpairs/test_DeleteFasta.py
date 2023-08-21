@@ -87,6 +87,16 @@ def test_delete_fasta_delete_length_one(testdir, mock_testclass):
     assert os.path.isfile("P19388.fasta")
 
 
+def test_delete_fasta_delete_length_zero(testdir, mock_testclass):
+    fasta1 = Path(__file__).parent.joinpath("P19388__P36954.fasta")
+    copyfile(fasta1, "P19388__P36954.fasta")
+    fasta2 = Path(__file__).parent.joinpath("P19388.fasta")
+    copyfile(fasta2, "P19388.fasta")
+    DeleteFasta.delete_fasta(["P19388__P36954.fasta", "P19388.fasta"], length=0)
+    assert not os.path.isfile("P19388__P36954.fasta")
+    assert not os.path.isfile("P19388.fasta")
+
+
 def test_delete_fasta_backup(testdir, mock_testclass):
     fasta1 = Path(__file__).parent.joinpath("P19388__P36954.fasta")
     copyfile(fasta1, "P19388__P36954.fasta")

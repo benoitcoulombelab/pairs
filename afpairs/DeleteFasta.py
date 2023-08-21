@@ -55,7 +55,7 @@ def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length:
                 if verbose:
                     print(f"Invalid sequence {any_invalid[0].name} in FASTA file {fasta}")
                 delete = True
-        if length:
+        if length is not None:
             fasta_length = sum([len(sequence) for sequence in sequences])
             if fasta_length > length:
                 if verbose:

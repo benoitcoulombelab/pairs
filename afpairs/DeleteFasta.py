@@ -5,7 +5,7 @@ import shutil
 
 from Bio import SeqIO
 
-VALID_AMINO_ACID_REGEX = r"^[ARNDCQEGHILKMFPSTWYV]+$"
+VALID_AMINO_ACID_REGEX = r"^[ACDEFGHIKLMNPQRSTVWY]+$"
 
 
 def dir_path(string):

@@ -37,7 +37,7 @@ process prepare_alphafold {
 
   script:
   """
-  mkdir prepare
+  mkdir -p prepare
   cp ${fasta} prepare
   bash $baseDir/alphafold.sh ${fasta} prepare "prepare"
   """
@@ -55,7 +55,7 @@ process alphafold {
 
   script:
   """
-    mkdir alphafold
+    mkdir -p alalphafold
     cp -r ${prepare} alphafold
     rm -r ${prepare}
     bash $baseDir/alphafold.sh ${fasta} alphafold "alphafold"

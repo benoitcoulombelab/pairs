@@ -24,6 +24,7 @@ setup(
             "interaction-score = afpairs.InteractionScore:main",
             "keep-gene-proteins = afpairs.KeepGeneProteins:main",
             "multi-interaction-score = afpairs.MultiInteractionScore:main",
+            "random-sequences = afpairs.RandomSequences:main",
             "score-matrix = afpairs.ScoreMatrix:main",
             "split-fasta = afpairs.SplitFasta:main",
         ]

@@ -55,9 +55,9 @@ process alphafold {
 
   script:
   """
-    mkdir -p alalphafold
-    cp -r ${prepare} alphafold
-    rm -r ${prepare}
-    bash $baseDir/alphafold.sh ${fasta} alphafold "alphafold"
-    """
+  mkdir -p alphafold
+  cp -r ${prepare} alphafold
+  rm -r ${prepare}
+  bash $baseDir/alphafold.sh ${fasta} alphafold "alphafold"
+  """
 }

@@ -98,6 +98,11 @@ def test_fasta_id_uniprot_gene(testdir, mock_testclass):
     assert fasta_id == "RPAB1_HUMAN"
 
 
+def test_fasta_id_uniprot_hyphen(testdir, mock_testclass):
+    fasta_id = FastaId.fasta_id("sp|P19388|RPAB1-HUMAN")
+    assert fasta_id == "RPAB1-HUMAN"
+
+
 def test_fasta_id_refseq(testdir, mock_testclass):
     fasta_id = FastaId.fasta_id(">NP_000928.1")
     assert fasta_id == "NP_000928"

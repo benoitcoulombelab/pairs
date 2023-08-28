@@ -51,7 +51,7 @@ def fasta_id(sequence_name: str, gene: bool = False):
     re_search = re.search(pattern, sequence_name)
     if re_search:
         sequence_name = re_search[1]
-        sequence_name = re.sub(r"\W.*", "", sequence_name)
+        sequence_name = re.sub(r"[^\w-].*", "", sequence_name)
         return f"{sequence_name}"
     return None
 

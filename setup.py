@@ -21,6 +21,7 @@ setup(
             "delete-fasta = afpairs.DeleteFasta:main",
             "fasta-id = afpairs.FastaId:main",
             "fasta-pairs = afpairs.FastaPairs:main",
+            "id-convert = afpairs.IdConvert:main",
             "interaction-score = afpairs.InteractionScore:main",
             "keep-gene-proteins = afpairs.KeepGeneProteins:main",
             "multi-interaction-score = afpairs.MultiInteractionScore:main",

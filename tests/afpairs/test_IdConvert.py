@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock, ANY, patch
 
 import pytest
 
@@ -19,12 +19,16 @@ def test_main(testdir, mock_testclass):
     mapping_file = "mapping.txt"
     open(mapping_file, 'w').close()
     IdConvert.id_convert = MagicMock()
-    IdConvert.main()
+    stdin_file = "stdin.txt"
+    open(stdin_file, 'w').close()
+    with open(stdin_file, 'r') as stdin_in, patch('sys.stdin', stdin_in):
+        IdConvert.main()
     IdConvert.id_convert.assert_called_once_with(
         input_file=ANY, output_file=ANY, mapping_file=ANY, id_column=0,
         mapping_source_column=0, mapping_converted_column=1)
-    assert IdConvert.id_convert.call_args.kwargs["input_file"].name == __file__
-    assert IdConvert.id_convert.call_args.kwargs["input_file"].mode == "r"
+    input_file = IdConvert.id_convert.call_args.kwargs["input_file"]
+    assert isinstance(input_file, TextIOWrapper)
+    assert input_file.mode == "r"
     assert isinstance(IdConvert.id_convert.call_args.kwargs["output_file"], TextIOWrapper)
     assert IdConvert.id_convert.call_args.kwargs["output_file"].mode in ["r+", "w"]
     assert IdConvert.id_convert.call_args.kwargs["mapping_file"].name == mapping_file

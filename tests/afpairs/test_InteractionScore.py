@@ -268,16 +268,16 @@ def test_get_chain(mock_testclass):
     structure = parser.get_structure("unknown", pdb)
     chain_a = structure[0]["A"]
     chain_b = structure[0]["B"]
-    chain = InteractionScore.get_chain(chain_a[1], 'R')
+    chain = InteractionScore.get_chain(chain_a[1])
     assert chain == chain_a
-    chain = InteractionScore.get_chain(chain_b[2], 'R')
+    chain = InteractionScore.get_chain(chain_b[2])
     assert chain == chain_b
-    chain = InteractionScore.get_chain(chain_a[1]["C"], 'A')
+    chain = InteractionScore.get_chain(chain_a[1]["C"])
     assert chain == chain_a
-    chain = InteractionScore.get_chain(chain_b[2]["C"], 'A')
+    chain = InteractionScore.get_chain(chain_b[2]["C"])
     assert chain == chain_b
     try:
-        InteractionScore.get_chain(chain_b, 'C')
+        InteractionScore.get_chain(chain_b)
     except AssertionError:
         assert True
     else:

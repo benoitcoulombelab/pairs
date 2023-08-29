@@ -126,14 +126,14 @@ def search_interactions(neighbor_search: NeighborSearch, radius: float, level: s
     """
     interactions = neighbor_search.search_all(radius, level)
     interactions = [residue_pair for residue_pair in interactions
-                    if (get_chain(residue_pair[0], level).get_id() in first_chains
-                        and get_chain(residue_pair[1], level).get_id() in second_chains)
-                    or (get_chain(residue_pair[0], level).get_id() in second_chains
-                        and get_chain(residue_pair[1], level).get_id() in first_chains)]
+                    if (get_chain(residue_pair[0]).get_id() in first_chains
+                        and get_chain(residue_pair[1]).get_id() in second_chains)
+                    or (get_chain(residue_pair[0]).get_id() in second_chains
+                        and get_chain(residue_pair[1]).get_id() in first_chains)]
     return interactions
 
 
-def get_chain(entity: Residue | Atom, level: str = 'R') -> Chain:
+def get_chain(entity: Residue | Atom) -> Chain:
     """
     Returns residue's/atom's chain.
 
@@ -141,12 +141,12 @@ def get_chain(entity: Residue | Atom, level: str = 'R') -> Chain:
     :param level: 'R' if entity is a residue, 'A' if entity is an atom
     :return: residue's/atom's chain
     """
-    if level == 'R':
+    if isinstance(entity, Residue):
         return entity.get_parent()
-    elif level == 'A':
+    elif isinstance(entity, Atom):
         return entity.get_parent().get_parent()
     else:
-        raise AssertionError(f"Level '{level}' is not one of 'A' or 'R'")
+        raise AssertionError(f"PDB entity '{entity}' is not one of Residue or Atom")
 
 
 def write_residues(residue_pairs: list[(Residue, Residue)], output_file: TextIO):

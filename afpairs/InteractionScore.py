@@ -11,8 +11,7 @@ from Bio.SeqUtils import molecular_weight, seq1
 
 
 def main(argv: list[str] = None):
-    parser = argparse.ArgumentParser(description="Counts the number of potentials interactions between "
-                                                 "residues of two proteins.")
+    parser = argparse.ArgumentParser(description="Compute protein-protein interaction score from PDB file")
     parser.add_argument('input', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help="PDB file created by AlphaFold containing two proteins of interest")
     parser.add_argument('-a', '--first', default="A",
@@ -30,7 +29,7 @@ def main(argv: list[str] = None):
     parser.add_argument('-A', '--atoms', type=argparse.FileType('w'), metavar="ATOMS",
                         help="Save pairs of atoms in tab separated file %(metavar)s")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
-                        help="Output file where to write number of potentials interactions")
+                        help="Output file where to write PPI score")
 
     args = parser.parse_args(argv)
     args.first = args.first.split(',')
@@ -49,7 +48,7 @@ def interaction_score(pdb: TextIO, radius: float = 6,
                       residues: TextIO = None,
                       atoms: TextIO = None) -> float:
     """
-    Compute score of proteins interaction from PDB file.
+    Compute score of protein-protein interaction from PDB file.
 
     By default, the score is the number of residue pairs that have atoms at a distance below radius.
 

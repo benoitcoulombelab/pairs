@@ -14,9 +14,9 @@ def file_path(string):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Count interactions for multiple PDB files.")
+    parser = argparse.ArgumentParser(description="Compute protein-protein interaction score from multiple PDB files.")
     parser.add_argument('infile', nargs='+', type=file_path,
-                        help="PDB files for which to count interactions")
+                        help="PDB files for which to compute PPI score")
     parser.add_argument('-n', '--name', default=r"(\w+)__(\w+)",
                         help="Regular expression to obtain protein/gene names based on PDB filename "
                              " (default: %(default)s)")
@@ -37,7 +37,7 @@ def main():
     args.first = args.first.split(',')
     args.second = args.second.split(',')
 
-    args.output.write("Bait\tTarget\tCount\n")
+    args.output.write("Bait\tTarget\tScore\n")
     for infile in args.infile:
         re_match = re.search(args.name, infile)
         if not re_match:

@@ -23,7 +23,6 @@ setup(
             "fasta-pairs = afpairs.FastaPairs:main",
             "id-convert = afpairs.IdConvert:main",
             "interaction-score = afpairs.InteractionScore:main",
-            "keep-gene-proteins = afpairs.KeepGeneProteins:main",
             "multi-interaction-score = afpairs.MultiInteractionScore:main",
             "random-sequences = afpairs.RandomSequences:main",
             "score-matrix = afpairs.ScoreMatrix:main",

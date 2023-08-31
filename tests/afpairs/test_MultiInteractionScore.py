@@ -153,6 +153,7 @@ def test_parse_mapping(testdir, mock_testclass):
     mapping_file = "mapping_file.txt"
     with open(mapping_file, 'w') as mapping_out:
         mapping_out.write("RPB1_HUMAN\tPOLR2A\n")
+        mapping_out.write("NOGENE_HUMAN\t\n")
         mapping_out.write("RPB2_HUMAN\tPOLR2B\n")
     with open(mapping_file, 'r') as mapping_in:
         mappings = MultiInteractionScore.parse_mapping(mapping_file=mapping_in)
@@ -160,3 +161,4 @@ def test_parse_mapping(testdir, mock_testclass):
     assert mappings["RPB1_HUMAN"] == "POLR2A"
     assert "RPB2_HUMAN" in mappings
     assert mappings["RPB2_HUMAN"] == "POLR2B"
+    assert "NOGENE_HUMAN" not in mappings

@@ -105,7 +105,8 @@ def parse_mapping(mapping_file: TextIO, source_column: int = 0, converted_column
         columns = line.rstrip('\r\n').split('\t')
         source = columns[source_column]
         converted = columns[converted_column]
-        mappings[source] = converted
+        if converted:
+            mappings[source] = converted
     return mappings
 
 

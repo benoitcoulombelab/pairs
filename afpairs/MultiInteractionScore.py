@@ -33,19 +33,29 @@ def main(argv: list[str] = None):
                              "'count / log2(sum weight of both proteins)'")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Tab delimited output file containing counts")
+    parser.add_argument('-M', '--mapping', type=argparse.FileType('r'),
+                        help="Tab delimited text file used to convert names  (default: %(default)s)")
+    parser.add_argument('-S', '--source_column', type=int, default='1',
+                        help="Column index of source names in mapping file - 1 means first column of file" +
+                             "   (default: %(default)s)")
+    parser.add_argument('-C', '--converted_column', type=int, default='2',
+                        help="Column index of converted names in mapping file - 1 means first column of file" +
+                             "   (default: %(default)s)")
 
     args = parser.parse_args(argv)
     args.first = args.first.split(',')
     args.second = args.second.split(',')
     multi_interaction_score(input_files=args.inputs, name=args.name, radius=args.radius, weight=args.weight,
-                            first_chains=args.first, second_chains=args.second, output_file=args.output)
+                            first_chains=args.first, second_chains=args.second, output_file=args.output,
+                            mapping_file=args.mapping, source_column=args.source_column - 1,
+                            converted_column=args.converted_column - 1)
 
 
 def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
                             radius: float = 6, weight: bool = False,
-                            first_chains: list[str] = ["A"],
-                            second_chains: list[str] = ["B"],
-                            output_file: TextIO = sys.stdout):
+                            first_chains: list[str] = ["A"], second_chains: list[str] = ["B"],
+                            output_file: TextIO = sys.stdout,
+                            mapping_file: TextIO = None, source_column: int = 0, converted_column: int = 1):
     """
     Compute protein-protein interaction score from multiple PDB files.
 
@@ -55,19 +65,48 @@ def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
     :param weight: if True, normalize score by proteins' weight
     :param first_chains: chains of the first protein
     :param second_chains: chains of the second protein
+    :param mapping_file: tab delimited text file used to convert names
+    :param source_column: column index of source names in mapping file
+    :param converted_column: column index of converted names in mapping file
     :param output_file: output file
     """
+    mappings = {}
+    if mapping_file:
+        mappings = parse_mapping(mapping_file, source_column, converted_column)
     output_file.write("Bait\tTarget\tScore\n")
     for input_file in input_files:
         re_match = re.search(name, input_file)
         if not re_match:
             raise AssertionError(f"Expression {name} cannot be found in filename {input_file}")
         bait, target = re_match.group(1, 2)
+        bait = mappings[bait] if bait in mappings else bait
+        target = mappings[target] if target in mappings else target
         with open(input_file, 'r') as input_in:
             score = InteractionScore.interaction_score(
                 pdb=input_in, radius=radius, weight=weight,
                 first_chains=first_chains, second_chains=second_chains)
         output_file.write(f"{bait}\t{target}\t{score}\n")
+
+
+def parse_mapping(mapping_file: TextIO, source_column: int = 0, converted_column: int = 1) \
+        -> dict[str, str]:
+    """
+    Parse mapping file.
+
+    :param mapping_file: text delimited filename
+    :param source_column: index of source id columns
+    :param converted_column: index of converted id columns
+    :return: dictionary of source id to converted id
+    """
+    mappings = {}
+    for line in mapping_file:
+        if line.startswith('#'):
+            continue
+        columns = line.rstrip('\r\n').split('\t')
+        source = columns[source_column]
+        converted = columns[converted_column]
+        mappings[source] = converted
+    return mappings
 
 
 if __name__ == '__main__':

@@ -4,6 +4,8 @@ import re
 import sys
 from typing import TextIO
 
+import smokesignal
+
 from afpairs import InteractionScore
 
 
@@ -33,6 +35,8 @@ def main(argv: list[str] = None):
                              "'count / log2(sum weight of both proteins)'")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Tab delimited output file containing counts")
+    parser.add_argument('-P', '--partial', action="store_true", default=False,
+                        help="Do not warn if all chains in PDB are not used for computing score")
     parser.add_argument('-M', '--mapping', type=argparse.FileType('r'),
                         help="Tab delimited text file used to convert names  (default: %(default)s)")
     parser.add_argument('-S', '--source_column', type=int, default='1',
@@ -45,8 +49,11 @@ def main(argv: list[str] = None):
     args = parser.parse_args(argv)
     args.first = args.first.split(',')
     args.second = args.second.split(',')
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+
     multi_interaction_score(input_files=args.inputs, name=args.name, radius=args.radius, weight=args.weight,
                             first_chains=args.first, second_chains=args.second, output_file=args.output,
+                            partial=args.partial,
                             mapping_file=args.mapping, source_column=args.source_column - 1,
                             converted_column=args.converted_column - 1)
 
@@ -54,7 +61,7 @@ def main(argv: list[str] = None):
 def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
                             radius: float = 6, weight: bool = False,
                             first_chains: list[str] = ["A"], second_chains: list[str] = ["B"],
-                            output_file: TextIO = sys.stdout,
+                            output_file: TextIO = sys.stdout, partial: bool = False,
                             mapping_file: TextIO = None, source_column: int = 0, converted_column: int = 1):
     """
     Compute protein-protein interaction score from multiple PDB files.
@@ -65,6 +72,7 @@ def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
     :param weight: if True, normalize score by proteins' weight
     :param first_chains: chains of the first protein
     :param second_chains: chains of the second protein
+    :param partial: do not warn if all chains in PDB are not used for computing score
     :param mapping_file: tab delimited text file used to convert names
     :param source_column: column index of source names in mapping file
     :param converted_column: column index of converted names in mapping file
@@ -84,7 +92,7 @@ def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
         with open(input_file, 'r') as input_in:
             score = InteractionScore.interaction_score(
                 pdb=input_in, radius=radius, weight=weight,
-                first_chains=first_chains, second_chains=second_chains)
+                first_chains=first_chains, second_chains=second_chains, partial=partial)
         output_file.write(f"{bait}\t{target}\t{score}\n")
 
 

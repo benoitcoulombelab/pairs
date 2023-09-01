@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, ANY, patch
 
 import pytest
+import smokesignal
 from Bio.PDB import PDBParser, NeighborSearch
 
 from afpairs import InteractionScore
@@ -18,6 +19,7 @@ def mock_testclass():
     _get_chain = InteractionScore.get_chain
     _write_residues = InteractionScore.write_residues
     _write_atoms = InteractionScore.write_atoms
+    _smokesignal_on = smokesignal.on
     yield
     InteractionScore.interaction_score = _interaction_score
     InteractionScore.potential_interactor_atoms = _potential_interactor_atoms
@@ -25,23 +27,27 @@ def mock_testclass():
     InteractionScore.get_chain = _get_chain
     InteractionScore.write_residues = _write_residues
     InteractionScore.write_atoms = _write_atoms
+    smokesignal.on = _smokesignal_on
 
 
 def test_main(testdir, mock_testclass, capsys):
     InteractionScore.interaction_score = MagicMock(return_value="2.3")
+    smokesignal.on = MagicMock()
     stdin_file = "stdin.txt"
     open(stdin_file, 'w').close()
     with open(stdin_file, 'r') as stdin_in, patch('sys.stdin', stdin_in):
         InteractionScore.main()
     InteractionScore.interaction_score.assert_called_once_with(
         pdb=ANY, radius=6.0, weight=False, first_chains=["A"], second_chains=["B"],
-        residues=None, atoms=None)
+        residues=None, atoms=None, partial=False)
     pdb = InteractionScore.interaction_score.call_args.kwargs['pdb']
     assert isinstance(pdb, TextIOWrapper)
     assert pdb.mode == "r"
     out, err = capsys.readouterr()
     sys.stdout.write(out)
     assert out == "2.3\n"
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_main_parameters(testdir, mock_testclass):
@@ -51,11 +57,12 @@ def test_main_parameters(testdir, mock_testclass):
     atom_pairs_file = "atoms.txt"
     output_file = "output.txt"
     InteractionScore.interaction_score = MagicMock(return_value="2.3")
+    smokesignal.on = MagicMock()
     InteractionScore.main(["-a", "A,B", "-b", "C,D", "-r", "8", "-w",
-                           "-R", residue_pairs_file, "-A", atom_pairs_file, "-o", output_file, input_file])
+                           "-R", residue_pairs_file, "-A", atom_pairs_file, "-o", output_file, "-P", input_file])
     InteractionScore.interaction_score.assert_called_once_with(
         pdb=ANY, radius=8, weight=True, first_chains=["A", "B"], second_chains=["C", "D"],
-        residues=ANY, atoms=ANY)
+        residues=ANY, atoms=ANY, partial=True)
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].name == input_file
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].mode == "r"
     assert InteractionScore.interaction_score.call_args.kwargs["residues"].name == residue_pairs_file
@@ -65,6 +72,8 @@ def test_main_parameters(testdir, mock_testclass):
     os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "2.3\n"
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_main_long_parameters(testdir, mock_testclass):
@@ -74,12 +83,13 @@ def test_main_long_parameters(testdir, mock_testclass):
     atom_pairs_file = "atoms.txt"
     output_file = "output.txt"
     InteractionScore.interaction_score = MagicMock(return_value="2.3")
+    smokesignal.on = MagicMock()
     InteractionScore.main(["--first", "A,B", "--second", "C,D", "--radius", "8", "--weight",
                            "--residues", residue_pairs_file, "--atoms", atom_pairs_file, "--output", output_file,
-                           input_file])
+                           "--partial", input_file])
     InteractionScore.interaction_score.assert_called_once_with(
         pdb=ANY, radius=8, weight=True, first_chains=["A", "B"], second_chains=["C", "D"],
-        residues=ANY, atoms=ANY)
+        residues=ANY, atoms=ANY, partial=True)
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].name == input_file
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].mode == "r"
     assert InteractionScore.interaction_score.call_args.kwargs["residues"].name == residue_pairs_file
@@ -89,6 +99,8 @@ def test_main_long_parameters(testdir, mock_testclass):
     os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "2.3\n"
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_interaction_score(testdir, mock_testclass):
@@ -153,6 +165,34 @@ def test_interaction_score_write_atoms(testdir, mock_testclass):
     assert (chain_a[15]["CG"], chain_b[1148]["CD2"]) in atoms_pairs
     assert (chain_a[15]["CG"], chain_b[1148]["CG"]) in atoms_pairs
     assert (chain_a[15]["CD1"], chain_b[1149]["CB"]) in atoms_pairs
+
+
+def test_interaction_score_unused_chain(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    InteractionScore.interaction_score(pdb=pdb)
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert err == "Chain C present in PDB but not used for scoring\n"
+
+
+def test_interaction_score_unused_chain_partial(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    InteractionScore.interaction_score(pdb=pdb, partial=True)
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert "Chain C present in PDB but not used for scoring\n" not in err
+
+
+def test_interaction_score_unused_chain_multiple_pdb(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    InteractionScore.interaction_score(pdb=pdb)
+    InteractionScore.interaction_score(pdb=pdb)
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert err == "Chain C present in PDB but not used for scoring\n"
 
 
 def test_potential_interactor_atoms(mock_testclass):

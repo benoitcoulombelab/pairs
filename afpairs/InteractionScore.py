@@ -3,11 +3,14 @@ import math
 import sys
 from typing import TextIO
 
+import smokesignal
 from Bio.PDB import PDBParser, NeighborSearch
 from Bio.PDB.Atom import Atom
 from Bio.PDB.Chain import Chain
 from Bio.PDB.Residue import Residue
 from Bio.SeqUtils import molecular_weight, seq1
+
+MISSING_CHAIN_EVENT = "missing_chain"
 
 
 def main(argv: list[str] = None):
@@ -30,14 +33,17 @@ def main(argv: list[str] = None):
                         help="Save pairs of atoms in tab separated file %(metavar)s")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Output file where to write PPI score")
+    parser.add_argument('-P', '--partial', action="store_true", default=False,
+                        help="Do not warn if all chains in PDB are not used for computing score")
 
     args = parser.parse_args(argv)
     args.first = args.first.split(',')
     args.second = args.second.split(',')
+    smokesignal.on(MISSING_CHAIN_EVENT, warn_missing_chain, max_calls=1)
 
     score = interaction_score(pdb=args.input, radius=args.radius, weight=args.weight,
                               first_chains=args.first, second_chains=args.second, residues=args.residues,
-                              atoms=args.atoms)
+                              atoms=args.atoms, partial=args.partial)
     args.output.write(f"{score}\n")
 
 
@@ -46,7 +52,8 @@ def interaction_score(pdb: TextIO, radius: float = 6,
                       first_chains: list[str] = ["A"],
                       second_chains: list[str] = ["B"],
                       residues: TextIO = None,
-                      atoms: TextIO = None) -> float:
+                      atoms: TextIO = None,
+                      partial: bool = False) -> float:
     """
     Compute score of protein-protein interaction from PDB file.
 
@@ -59,10 +66,16 @@ def interaction_score(pdb: TextIO, radius: float = 6,
     :param second_chains: chains of the second protein
     :param residues: write residues pairs to this file, if specified
     :param atoms: write atoms pairs to this file, if specified
+    :param partial: do not warn if all chains in PDB are not used for computing score
     :return: score of proteins interaction
     """
     parser = PDBParser()
     structure = parser.get_structure("unknown", pdb)
+    if not partial:
+        for chain in structure[0]:
+            if chain.get_id() not in first_chains + second_chains:
+                smokesignal.emit(MISSING_CHAIN_EVENT, chain)
+                break
 
     proteins_atoms = []
     for chain in first_chains + second_chains:
@@ -190,6 +203,10 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
             output_file.write("\t")
             output_file.write(f"{atom.get_name()}")
             output_file.write("\t" if i < 1 else "\n")
+
+
+def warn_missing_chain(chain: Chain):
+    print(f"Chain {chain.get_id()} present in PDB but not used for scoring", file=sys.stderr)
 
 
 if __name__ == '__main__':

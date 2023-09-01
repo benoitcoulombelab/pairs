@@ -14,7 +14,8 @@ setup(
         "License :: OSI Approved :: GNU General Public License version 3"
     ],
     install_requires=[
-        "biopython>=1.81"
+        "biopython>=1.81",
+        "smokesignal>=0.7"
     ],
     entry_points={
         "console_scripts": [

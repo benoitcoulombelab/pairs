@@ -1,8 +1,11 @@
 import os.path
+import sys
 from io import TextIOWrapper
+from pathlib import Path
 from unittest.mock import MagicMock, ANY
 
 import pytest
+import smokesignal
 
 from afpairs import InteractionScore, MultiInteractionScore
 
@@ -13,25 +16,30 @@ def mock_testclass():
     _multi_interaction_score = MultiInteractionScore.multi_interaction_score
     _parse_mapping = MultiInteractionScore.parse_mapping
     _interaction_score = InteractionScore.interaction_score
+    _smokesignal_on = smokesignal.on
     yield
     MultiInteractionScore.file_path = _file_path
     MultiInteractionScore.multi_interaction_score = _multi_interaction_score
     MultiInteractionScore.parse_mapping = _parse_mapping
     InteractionScore.interaction_score = _interaction_score
+    smokesignal.on = _smokesignal_on
 
 
 def test_main(testdir, mock_testclass):
     pdbs = ["1.pdb", "2.pdb", "3.pdb"]
     [open(f, 'w').close() for f in pdbs]
     MultiInteractionScore.multi_interaction_score = MagicMock()
+    smokesignal.on = MagicMock()
     MultiInteractionScore.main(pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
         input_files=pdbs, name=r"(\w+)__(\w+)", radius=6.0, weight=False,
-        first_chains=["A"], second_chains=["B"], output_file=ANY,
+        first_chains=["A"], second_chains=["B"], output_file=ANY, partial=False,
         mapping_file=None, source_column=0, converted_column=1)
     output_file = MultiInteractionScore.multi_interaction_score.call_args.kwargs["output_file"]
     assert isinstance(output_file, TextIOWrapper)
     assert output_file.mode in ["r+", "w"]
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_main_parameters(testdir, mock_testclass):
@@ -41,12 +49,13 @@ def test_main_parameters(testdir, mock_testclass):
     open(mapping_file, 'w').close()
     output_file = "output.txt"
     MultiInteractionScore.multi_interaction_score = MagicMock()
+    smokesignal.on = MagicMock()
     MultiInteractionScore.main(
-        ["-n", r"(\w+)____(\w+)", "-a", "A,B", "-b", "C,D", "-r", "9", "-w", "-o", output_file,
+        ["-n", r"(\w+)____(\w+)", "-a", "A,B", "-b", "C,D", "-r", "9", "-w", "-o", output_file, "-P",
          "-M", mapping_file, "-S", "2", "-C", "3"] + pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
         input_files=pdbs, name=r"(\w+)____(\w+)", radius=9.0, weight=True,
-        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY,
+        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY, partial=True,
         mapping_file=ANY, source_column=1, converted_column=2)
     mapping_in = MultiInteractionScore.multi_interaction_score.call_args.kwargs["mapping_file"]
     assert mapping_in.name == mapping_file
@@ -54,6 +63,8 @@ def test_main_parameters(testdir, mock_testclass):
     output_out = MultiInteractionScore.multi_interaction_score.call_args.kwargs["output_file"]
     assert output_out.name == output_file
     assert output_out.mode == "w"
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_main_long_parameters(testdir, mock_testclass):
@@ -63,12 +74,14 @@ def test_main_long_parameters(testdir, mock_testclass):
     open(mapping_file, 'w').close()
     output_file = "output.txt"
     MultiInteractionScore.multi_interaction_score = MagicMock()
+    smokesignal.on = MagicMock()
     MultiInteractionScore.main(
         ["--name", r"(\w+)____(\w+)", "--first", "A,B", "--second", "C,D", "--radius", "9", "--weight",
-         "--output", output_file, "--mapping", mapping_file, "--source_column", "2", "--converted_column", "3"] + pdbs)
+         "--output", output_file, "--partial",
+         "--mapping", mapping_file, "--source_column", "2", "--converted_column", "3"] + pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
         input_files=pdbs, name=r"(\w+)____(\w+)", radius=9.0, weight=True,
-        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY,
+        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY, partial=True,
         mapping_file=ANY, source_column=1, converted_column=2)
     mapping_in = MultiInteractionScore.multi_interaction_score.call_args.kwargs["mapping_file"]
     assert mapping_in.name == mapping_file
@@ -76,6 +89,8 @@ def test_main_long_parameters(testdir, mock_testclass):
     output_out = MultiInteractionScore.multi_interaction_score.call_args.kwargs["output_file"]
     assert output_out.name == output_file
     assert output_out.mode == "w"
+    smokesignal.on.assert_called_once_with(
+        InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
 
 def test_multi_interaction_score(testdir, mock_testclass):
@@ -86,7 +101,7 @@ def test_multi_interaction_score(testdir, mock_testclass):
     with open(output_file, 'w') as output_out:
         MultiInteractionScore.multi_interaction_score(input_files=pdbs, output_file=output_out)
     InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0, weight=False,
-                                                       first_chains=["A"], second_chains=["B"])
+                                                       first_chains=["A"], second_chains=["B"], partial=False)
     for i in range(0, len(pdbs)):
         assert InteractionScore.interaction_score.call_args_list[i].kwargs["pdb"].name == pdbs[i]
     assert os.path.isfile(output_file)
@@ -110,7 +125,7 @@ def test_multi_interaction_score_mapping(testdir, mock_testclass):
         MultiInteractionScore.multi_interaction_score(input_files=pdbs, output_file=output_out, mapping_file=mapping_in)
         MultiInteractionScore.parse_mapping.assert_called_once_with(mapping_in, 0, 1)
     InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0, weight=False,
-                                                       first_chains=["A"], second_chains=["B"])
+                                                       first_chains=["A"], second_chains=["B"], partial=False)
     for i in range(0, len(pdbs)):
         assert InteractionScore.interaction_score.call_args_list[i].kwargs["pdb"].name == pdbs[i]
     assert os.path.isfile(output_file)
@@ -147,6 +162,33 @@ def test_multi_interaction_score_invalid_filename(testdir, mock_testclass):
         assert True
     else:
         assert False, "Expected AssertionError"
+
+
+def test_multi_interaction_score_unused_chain(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    MultiInteractionScore.multi_interaction_score(input_files=[str(pdb)])
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert err == "Chain C present in PDB but not used for scoring\n"
+
+
+def test_multi_interaction_score_unused_chain_partial(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    MultiInteractionScore.multi_interaction_score(input_files=[str(pdb)], partial=True)
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert "Chain C present in PDB but not used for scoring\n" not in err
+
+
+def test_multi_interaction_score_unused_chain_multiple_pdb(testdir, mock_testclass, capsys):
+    smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
+    pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
+    MultiInteractionScore.multi_interaction_score(input_files=[str(pdb), str(pdb)])
+    out, err = capsys.readouterr()
+    sys.stderr.write(err)
+    assert err == "Chain C present in PDB but not used for scoring\n"
 
 
 def test_parse_mapping(testdir, mock_testclass):

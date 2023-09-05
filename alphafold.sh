@@ -19,7 +19,7 @@ then
               hh-suite/3.3.0 python/3.8
   module load alphafold/2.3.2
 fi
-data_dir="$ALPHAFOLD_SMALL_DATADIR"
+data_dir="$ALPHAFOLD_DATADIR"
 
 ### Check values of some environment variables
 echo SLURM_JOB_ID="$SLURM_JOB_ID"

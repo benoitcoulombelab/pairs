@@ -20,7 +20,7 @@ def main(argv: list[str] = None):
     parser = argparse.ArgumentParser(description="Compute protein-protein interaction score from multiple PDB files.")
     parser.add_argument('inputs', nargs='+', type=file_path,
                         help="PDB files for which to compute PPI score")
-    parser.add_argument('-n', '--name', default=r"(\w+)__(\w+)",
+    parser.add_argument('-n', '--name', default=r"([\w-]+)__([\w-]+)",
                         help="Regular expression to obtain protein/gene names based on PDB filename "
                              " (default: %(default)s)")
     parser.add_argument('-a', '--first', default="A",
@@ -58,7 +58,7 @@ def main(argv: list[str] = None):
                             converted_column=args.converted_column - 1)
 
 
-def multi_interaction_score(input_files: list[str], name: str = r"(\w+)__(\w+)",
+def multi_interaction_score(input_files: list[str], name: str = r"([\w-]+)__([\w-]+)",
                             radius: float = 6, weight: bool = False,
                             first_chains: list[str] = ["A"], second_chains: list[str] = ["B"],
                             output_file: TextIO = sys.stdout, partial: bool = False,

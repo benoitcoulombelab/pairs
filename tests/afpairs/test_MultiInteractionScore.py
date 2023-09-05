@@ -32,7 +32,7 @@ def test_main(testdir, mock_testclass):
     smokesignal.on = MagicMock()
     MultiInteractionScore.main(pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
-        input_files=pdbs, name=r"(\w+)__(\w+)", radius=6.0, weight=False,
+        input_files=pdbs, name=r"([\w-]+)__([\w-]+)", radius=6.0, weight=False,
         first_chains=["A"], second_chains=["B"], output_file=ANY, partial=False,
         mapping_file=None, source_column=0, converted_column=1)
     output_file = MultiInteractionScore.multi_interaction_score.call_args.kwargs["output_file"]
@@ -94,7 +94,7 @@ def test_main_long_parameters(testdir, mock_testclass):
 
 
 def test_multi_interaction_score(testdir, mock_testclass):
-    pdbs = ["POLR2A__POLR2B.pdb", "POLR2C__POLR2J.pdb", "POLR2D__POLR2G.pdb"]
+    pdbs = ["POLR2A__POLR2B.pdb", "POLR2C__POLR2J-I.pdb", "POLR2D-E__POLR2G.pdb"]
     [open(f, 'w').close() for f in pdbs]
     output_file = "output.txt"
     InteractionScore.interaction_score = MagicMock(side_effect=[2.3, 4.5, 8.2])
@@ -108,8 +108,8 @@ def test_multi_interaction_score(testdir, mock_testclass):
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Bait\tTarget\tScore\n"
         assert output_in.readline() == "POLR2A\tPOLR2B\t2.3\n"
-        assert output_in.readline() == "POLR2C\tPOLR2J\t4.5\n"
-        assert output_in.readline() == "POLR2D\tPOLR2G\t8.2\n"
+        assert output_in.readline() == "POLR2C\tPOLR2J-I\t4.5\n"
+        assert output_in.readline() == "POLR2D-E\tPOLR2G\t8.2\n"
 
 
 def test_multi_interaction_score_mapping(testdir, mock_testclass):

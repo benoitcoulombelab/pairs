@@ -15,6 +15,7 @@ setup(
     ],
     install_requires=[
         "biopython>=1.81",
+        "pandas>=2.1.0",
         "smokesignal>=0.7"
     ],
     entry_points={

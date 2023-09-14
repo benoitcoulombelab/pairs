@@ -19,6 +19,9 @@ def mock_testclass():
     _get_chain = InteractionScore.get_chain
     _write_residues = InteractionScore.write_residues
     _write_atoms = InteractionScore.write_atoms
+    _is_charged_bond = InteractionScore.is_charged_bond
+    _is_hydrophobic_bond = InteractionScore.is_hydrophobic_bond
+    _is_hydrogen_bond = InteractionScore.is_hydrogen_bond
     _smokesignal_on = smokesignal.on
     yield
     InteractionScore.interaction_score = _interaction_score
@@ -27,6 +30,9 @@ def mock_testclass():
     InteractionScore.get_chain = _get_chain
     InteractionScore.write_residues = _write_residues
     InteractionScore.write_atoms = _write_atoms
+    InteractionScore.is_charged_bond = _is_charged_bond
+    InteractionScore.is_hydrophobic_bond = _is_hydrophobic_bond
+    InteractionScore.is_hydrogen_bond = _is_hydrogen_bond
     smokesignal.on = _smokesignal_on
 
 
@@ -329,16 +335,28 @@ def test_write_residues(testdir, mock_testclass):
     parser = PDBParser()
     structure = parser.get_structure("unknown", pdb)
     residue_pairs = [(structure[0]["A"][1], structure[0]["B"][1]),
-                     (structure[0]["A"][2], structure[0]["B"][2])]
+                     (structure[0]["A"][2], structure[0]["B"][2]),
+                     (structure[0]["A"][3], structure[0]["B"][3])]
     output_file = "residues.txt"
+    InteractionScore.is_charged_bond = MagicMock(side_effect=[True, False, False])
+    InteractionScore.is_hydrophobic_bond = MagicMock(side_effect=[True, False])
+    InteractionScore.is_hydrogen_bond = MagicMock(side_effect=[True])
     with open(output_file, 'w') as output_out:
         InteractionScore.write_residues(residue_pairs=residue_pairs, output_file=output_out)
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][1], structure[0]["B"][1])
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
+    InteractionScore.is_hydrophobic_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
+    InteractionScore.is_hydrophobic_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
+    InteractionScore.is_hydrogen_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
     os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Chain A\tResidue number A\tResidue name A\t" \
-                                       "Chain B\tResidue number B\tResidue name B\n"
-        assert output_in.readline() == "A\t1\tMET\tB\t1\tMET\n"
-        assert output_in.readline() == "A\t2\tHIS\tB\t2\tTYR\n"
+                                       "Chain B\tResidue number B\tResidue name B\t" \
+                                       "Bond type (guess)\n"
+        assert output_in.readline() == "A\t1\tMET\tB\t1\tMET\tCharged\n"
+        assert output_in.readline() == "A\t2\tHIS\tB\t2\tTYR\tHydrophobic\n"
+        assert output_in.readline() == "A\t3\tGLY\tB\t3\tASP\tHydrogen\n"
 
 
 def test_write_atoms(testdir, mock_testclass):
@@ -346,13 +364,82 @@ def test_write_atoms(testdir, mock_testclass):
     parser = PDBParser()
     structure = parser.get_structure("unknown", pdb)
     atom_pairs = [(structure[0]["A"][1]["C"], structure[0]["B"][1]["N"]),
-                  (structure[0]["A"][2]["CA"], structure[0]["B"][2]["O"])]
+                  (structure[0]["A"][2]["CA"], structure[0]["B"][2]["O"]),
+                  (structure[0]["A"][3]["CA"], structure[0]["B"][3]["CG"])]
     output_file = "atoms.txt"
+    InteractionScore.is_charged_bond = MagicMock(side_effect=[True, False, False])
+    InteractionScore.is_hydrophobic_bond = MagicMock(side_effect=[True, False])
+    InteractionScore.is_hydrogen_bond = MagicMock(side_effect=[True])
     with open(output_file, 'w') as output_out:
         InteractionScore.write_atoms(atom_pairs=atom_pairs, output_file=output_out)
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][1], structure[0]["B"][1])
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
+    InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
+    InteractionScore.is_hydrophobic_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
+    InteractionScore.is_hydrophobic_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
+    InteractionScore.is_hydrogen_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
     os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Chain A\tResidue number A\tResidue name A\tAtom A\t" \
-                                       "Chain B\tResidue number B\tResidue name B\tAtom B\n"
-        assert output_in.readline() == "A\t1\tMET\tC\tB\t1\tMET\tN\n"
-        assert output_in.readline() == "A\t2\tHIS\tCA\tB\t2\tTYR\tO\n"
+                                       "Chain B\tResidue number B\tResidue name B\tAtom B\t" \
+                                       "Bond type (guess)\n"
+        assert output_in.readline() == "A\t1\tMET\tC\tB\t1\tMET\tN\tCharged\n"
+        assert output_in.readline() == "A\t2\tHIS\tCA\tB\t2\tTYR\tO\tHydrophobic\n"
+        assert output_in.readline() == "A\t3\tGLY\tCA\tB\t3\tASP\tCG\tHydrogen\n"
+
+
+def test_get_residue_siblings(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    residue = structure[0]["A"][10]
+    residues = InteractionScore.get_residue_siblings(residue)
+    assert residues[0] == structure[0]["A"][8]
+    assert residues[1] == structure[0]["A"][9]
+    assert residues[2] == structure[0]["A"][10]
+    assert residues[3] == structure[0]["A"][11]
+    assert residues[4] == structure[0]["A"][12]
+    residues = InteractionScore.get_residue_siblings(residue, distance=3)
+    assert residues[0] == structure[0]["A"][7]
+    assert residues[1] == structure[0]["A"][8]
+    assert residues[2] == structure[0]["A"][9]
+    assert residues[3] == structure[0]["A"][10]
+    assert residues[4] == structure[0]["A"][11]
+    assert residues[5] == structure[0]["A"][12]
+    assert residues[6] == structure[0]["A"][13]
+
+
+def test_is_charged_bond(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    glu = structure[0]["A"][559]
+    arg = structure[0]["B"][1035]
+    assert InteractionScore.is_charged_bond(glu, arg)
+    gly = structure[0]["B"][1034]
+    assert not InteractionScore.is_charged_bond(glu, gly)
+
+
+def test_is_hydrophobic_bond(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    phe = structure[0]["A"][23]
+    pro = structure[0]["B"][1169]
+    assert InteractionScore.is_hydrophobic_bond(phe, pro)
+    gln = structure[0]["B"][500]
+    assert not InteractionScore.is_hydrophobic_bond(phe, gln)
+
+
+def test_is_hydrogen_bond(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    gln = structure[0]["A"][267]
+    lys = structure[0]["A"][466]
+    glu = structure[0]["B"][816]
+    assert InteractionScore.is_hydrogen_bond(gln, lys)
+    assert InteractionScore.is_hydrogen_bond(gln, glu)
+    assert InteractionScore.is_hydrogen_bond(lys, glu)
+    phe = structure[0]["A"][23]
+    assert not InteractionScore.is_hydrogen_bond(gln, phe)

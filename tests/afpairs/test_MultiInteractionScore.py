@@ -2,7 +2,7 @@ import os.path
 import sys
 from io import TextIOWrapper
 from pathlib import Path
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock, ANY, patch
 
 import pytest
 import smokesignal
@@ -32,8 +32,8 @@ def test_main(testdir, mock_testclass):
     smokesignal.on = MagicMock()
     MultiInteractionScore.main(pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
-        input_files=pdbs, name=r"([\w-]+)__([\w-]+)", radius=6.0, weight=False,
-        first_chains=["A"], second_chains=["B"], output_file=ANY, partial=False,
+        input_files=pdbs, output_file=ANY, name=r"([\w-]+)__([\w-]+)", radius=6.0, weight=False, progress=False,
+        first_chains=["A"], second_chains=["B"], partial=False,
         mapping_file=None, source_column=0, converted_column=1)
     output_file = MultiInteractionScore.multi_interaction_score.call_args.kwargs["output_file"]
     assert isinstance(output_file, TextIOWrapper)
@@ -51,11 +51,11 @@ def test_main_parameters(testdir, mock_testclass):
     MultiInteractionScore.multi_interaction_score = MagicMock()
     smokesignal.on = MagicMock()
     MultiInteractionScore.main(
-        ["-n", r"(\w+)____(\w+)", "-a", "A,B", "-b", "C,D", "-r", "9", "-w", "-o", output_file, "-P",
+        ["-o", output_file, "-n", r"(\w+)____(\w+)", "-a", "A,B", "-b", "C,D", "-r", "9", "-w", "-p", "-P",
          "-M", mapping_file, "-S", "2", "-C", "3"] + pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
-        input_files=pdbs, name=r"(\w+)____(\w+)", radius=9.0, weight=True,
-        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY, partial=True,
+        input_files=pdbs, output_file=ANY, name=r"(\w+)____(\w+)", radius=9.0, weight=True, progress=True,
+        first_chains=["A", "B"], second_chains=["C", "D"], partial=True,
         mapping_file=ANY, source_column=1, converted_column=2)
     mapping_in = MultiInteractionScore.multi_interaction_score.call_args.kwargs["mapping_file"]
     assert mapping_in.name == mapping_file
@@ -76,12 +76,12 @@ def test_main_long_parameters(testdir, mock_testclass):
     MultiInteractionScore.multi_interaction_score = MagicMock()
     smokesignal.on = MagicMock()
     MultiInteractionScore.main(
-        ["--name", r"(\w+)____(\w+)", "--first", "A,B", "--second", "C,D", "--radius", "9", "--weight",
-         "--output", output_file, "--partial",
+        ["--output", output_file, "--name", r"(\w+)____(\w+)", "--first", "A,B", "--second", "C,D", "--radius", "9",
+         "--weight", "--progress", "--partial",
          "--mapping", mapping_file, "--source_column", "2", "--converted_column", "3"] + pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
-        input_files=pdbs, name=r"(\w+)____(\w+)", radius=9.0, weight=True,
-        first_chains=["A", "B"], second_chains=["C", "D"], output_file=ANY, partial=True,
+        input_files=pdbs, output_file=ANY, name=r"(\w+)____(\w+)", radius=9.0, weight=True, progress=True,
+        first_chains=["A", "B"], second_chains=["C", "D"], partial=True,
         mapping_file=ANY, source_column=1, converted_column=2)
     mapping_in = MultiInteractionScore.multi_interaction_score.call_args.kwargs["mapping_file"]
     assert mapping_in.name == mapping_file
@@ -189,6 +189,26 @@ def test_multi_interaction_score_unused_chain_multiple_pdb(testdir, mock_testcla
     out, err = capsys.readouterr()
     sys.stderr.write(err)
     assert err == "Chain C present in PDB but not used for scoring\n"
+
+
+def test_multi_interaction_score_progress(testdir, mock_testclass):
+    pdbs = ["POLR2A__POLR2B.pdb", "POLR2C__POLR2J-I.pdb", "POLR2D-E__POLR2G.pdb"]
+    [open(f, 'w').close() for f in pdbs]
+    output_file = "output.txt"
+    InteractionScore.interaction_score = MagicMock(side_effect=[2.3, 4.5, 8.2])
+    with open(output_file, 'w') as output_out, patch("tqdm.tqdm", return_value=pdbs) as mock_tqdm:
+        MultiInteractionScore.multi_interaction_score(input_files=pdbs, output_file=output_out, progress=True)
+        mock_tqdm.assert_called_once_with(pdbs)
+    InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0, weight=False,
+                                                       first_chains=["A"], second_chains=["B"], partial=False)
+    for i in range(0, len(pdbs)):
+        assert InteractionScore.interaction_score.call_args_list[i].kwargs["pdb"].name == pdbs[i]
+    assert os.path.isfile(output_file)
+    with open(output_file, 'r') as output_in:
+        assert output_in.readline() == "Bait\tTarget\tScore\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t2.3\n"
+        assert output_in.readline() == "POLR2C\tPOLR2J-I\t4.5\n"
+        assert output_in.readline() == "POLR2D-E\tPOLR2G\t8.2\n"
 
 
 def test_parse_mapping(testdir, mock_testclass):

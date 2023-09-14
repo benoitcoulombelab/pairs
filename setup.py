@@ -16,7 +16,8 @@ setup(
     install_requires=[
         "biopython>=1.81",
         "pandas>=2.1.0",
-        "smokesignal>=0.7"
+        "smokesignal>=0.7",
+        "tqdm>=4.66.1"
     ],
     entry_points={
         "console_scripts": [

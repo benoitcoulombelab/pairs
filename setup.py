@@ -21,6 +21,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
+            "consensus-interface = afpairs.ConsensusInterface:main",
             "delete-fasta = afpairs.DeleteFasta:main",
             "fasta-id = afpairs.FastaId:main",
             "fasta-pairs = afpairs.FastaPairs:main",

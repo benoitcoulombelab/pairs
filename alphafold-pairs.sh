@@ -2,7 +2,7 @@
 #SBATCH --account=def-coulomb
 #SBATCH --time=7-00:00:00
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8G
+#SBATCH --mem=2G
 #SBATCH --mail-type=NONE
 #SBATCH --output=alphafold-pairs-%A.out
 

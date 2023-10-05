@@ -16,7 +16,7 @@
     * [Patching AlphaFold-Multimer](#patching-alphafold-multimer)
         * [Running only prepare or alphafold step](#running-only-prepare-or-alphafold-step)
     * [Alternative to patching AlphaFold-Multimer](#alternative-to-patching-alphafold-multimer)
-* [Protein complexes](Protein complexes)
+* [Protein complexes](#protein-complexes)
     * [Interaction scores matrix](#interaction-scores-matrix)
     * [Zscore matrix](#zscore-matrix)
 * [Extract interfaces of a protein-protein interaction](#extract-interfaces-of-a-protein-protein-interaction)

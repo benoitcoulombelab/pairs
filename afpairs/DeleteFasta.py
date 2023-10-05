@@ -4,11 +4,12 @@ import re
 import shutil
 
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 
 VALID_AMINO_ACID_REGEX = r"^[ACDEFGHIKLMNPQRSTVWY]+$"
 
 
-def dir_path(string):
+def dir_path(string: str):
     if not string or os.path.isdir(string):
         return string
     else:
@@ -34,7 +35,7 @@ def main(argv: list[str] = None):
                  verbose=args.verbose)
 
 
-def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length: int = None, backup: str = None,
+def delete_fasta(inputs: list[str], invalid_sequence: bool = False, length: int = None, backup: str = None,
                  verbose: bool = False):
     """
     Deletes FASTA files if they fail any condition.
@@ -67,7 +68,7 @@ def delete_fasta(inputs: list[str] = [], invalid_sequence: bool = False, length:
             os.remove(fasta)
 
 
-def parse_fasta(fasta: str) -> list:
+def parse_fasta(fasta: str) -> list[SeqRecord]:
     """
     Returns sequences read from FASTA file.
 

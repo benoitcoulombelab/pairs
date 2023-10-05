@@ -6,7 +6,7 @@ from Bio import SeqIO, SeqRecord
 from afpairs import FastaId
 
 
-def dir_path(string):
+def dir_path(string: str):
     if not string or os.path.isdir(string):
         return string
     else:

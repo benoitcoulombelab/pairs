@@ -9,7 +9,7 @@ from Bio.SeqRecord import SeqRecord
 from afpairs import FastaId
 
 
-def dir_path(string):
+def dir_path(string: str):
     if not string or os.path.isdir(string):
         return string
     else:
@@ -43,12 +43,12 @@ def split_fasta(fasta: TextIO, output_dir: str):
         SeqIO.write(sequences[sequence_id], os.path.join(output_dir, f"{sequence_id}.fasta"), "fasta")
 
 
-def parse_fasta(fasta: TextIO) -> list[SeqRecord]:
+def parse_fasta(fasta: TextIO) -> dict[str, SeqRecord]:
     """
     Parses FASTA file.
 
     :param fasta: FASTA file
-    :return: list of sequences from FASTA file
+    :return: dictionary of sequences from FASTA file mapped by their id
     """
     sequences = {}
     for record in SeqIO.parse(fasta, "fasta"):

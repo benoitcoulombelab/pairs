@@ -10,7 +10,7 @@ import tqdm
 from afpairs import InteractionScore
 
 
-def file_path(string):
+def file_path(string: str):
     if not string or os.path.isfile(string):
         return string
     else:

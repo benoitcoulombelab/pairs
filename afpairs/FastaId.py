@@ -30,7 +30,7 @@ def main(argv: list[str] = None):
         raise AssertionError("Could not find any id in sequence name")
 
 
-def fasta_id(sequence_name: str, gene: bool = False):
+def fasta_id(sequence_name: str, gene: bool = False) -> str:
     """
     Returns sequence accession/id from the sequence name.
 

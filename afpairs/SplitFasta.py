@@ -17,14 +17,14 @@ def dir_path(string: str):
 
 
 def main(argv: list[str] = None):
-    parser = argparse.ArgumentParser(description="Create FASTA files containing one sequence per file.")
-    parser.add_argument('input', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
-                        help="FASTA file containing baits")
+    parser = argparse.ArgumentParser(description="Creates a FASTA file per sequence found in input FASTA file.")
+    parser.add_argument('fasta', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
+                        help="FASTA file containing sequences")
     parser.add_argument('-o', '--output', type=dir_path, default="",
-                        help="Directory where to write FASTA files.  (default: current directory)")
+                        help="Directory where to write individual FASTA files.  (default: current directory)")
 
     args = parser.parse_args(argv)
-    split_fasta(fasta=args.input, output_dir=args.output)
+    split_fasta(fasta=args.fasta, output_dir=args.output)
 
 
 def split_fasta(fasta: TextIO, output_dir: str):

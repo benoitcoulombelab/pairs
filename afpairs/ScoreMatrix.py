@@ -16,47 +16,81 @@ def main(argv: list[str] = None):
     parser = argparse.ArgumentParser(description="Generate score matrix from MultiInteractionScore's output.")
     parser.add_argument('scores', nargs='*', type=argparse.FileType('r'), default=[sys.stdin],
                         help="Tab delimited files containing protein id/accession and scores")
+    parser.add_argument('-z', '--zscore', action="store_true",
+                        help="Apply Z-score per baits")
     parser.add_argument('-u', '--unique', action='store_true',
                         help="Protein pairs are unique, so mirror the scores in matrix")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Tab delimited output file containing score matrix")
 
     args = parser.parse_args(argv)
-    score_matrix(score_files=args.scores, output_file=args.output, unique=args.unique)
+    score_matrix(score_files=args.scores, output_file=args.output, zscore=args.zscore, unique=args.unique)
 
 
-def score_matrix(score_files: list[TextIO], output_file: TextIO, unique: bool = False):
+def score_matrix(score_files: list[TextIO], output_file: TextIO, zscore: bool = False, unique: bool = False):
     """
     Generates score matrix.
     Matrix rows contain one bait and columns contain one target.
 
     :param score_files: tab delimited files containing protein id/accession and scores
     :param output_file: tab delimited output file containing score matrix
+    :param zscore: apply Z-scores to each bait
     :param unique: protein pairs are unique, so mirror the scores in matrix
     """
     interactions = []
     for score_file in score_files:
         interactions.extend(parse_scores(score_file))
-    matrix = interaction_matrix(interactions, unique=unique)
+    matrix = interaction_matrix(interactions, zscore=zscore, unique=unique)
     matrix.to_csv(output_file, sep="\t", index_label="Target")
 
 
-def interaction_matrix(interactions: list[Interaction], unique: bool = False) -> pandas.DataFrame:
+def interaction_matrix(interactions: list[Interaction], zscore: bool = False, unique: bool = False) -> pandas.DataFrame:
     """
     Converts list of interactions into a DataFrame.
 
-    :param unique: keep only the maximum value of bait-target and target-bait for both
     :param interactions: interactions
+    :param zscore: apply Z-scores to each bait
+    :param unique: keep only the maximum value of bait-target and target-bait for both
     :return: DataFrame containing one line per target and one column per bait
     """
+    matrix = pandas.DataFrame({"Bait": [interaction.bait for interaction in interactions],
+                               "Target": [interaction.target for interaction in interactions],
+                               "Score": [interaction.score for interaction in interactions]})
+    matrix = matrix.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max")
     if unique:
-        interactions_inverse = [Interaction(i.target, i.bait, i.score) for i in interactions]
-        interactions = interactions + interactions_inverse
-    interactions_df = pandas.DataFrame({"Bait": [interaction.bait for interaction in interactions],
-                                        "Target": [interaction.target for interaction in interactions],
-                                        "Score": [interaction.score for interaction in interactions]})
-    matrix = interactions_df.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max")
+        matrix = unique_matrix(matrix)
+    if zscore:
+        matrix = z_score(matrix)
+        if unique:
+            matrix = unique_matrix(matrix)
     return matrix
+
+
+def z_score(df: pandas.DataFrame):
+    """
+    Compute Z-scores in all columns of dataframe.
+
+    :param df: input dataframe
+    :return: dataframe with Z-scores applied by columns
+    """
+    return (df - df.mean()) / df.std(ddof=0)
+
+
+def unique_matrix(df: pandas.DataFrame):
+    """
+    Mirror the scores in matrix and keep only the maximum of both values.
+
+    :param df: score matrix as a dataframe
+    :return: dataframe with scores mirrored where max is kept
+    """
+    df["Target"] = df.index
+    matrix = pandas.melt(df, id_vars="Target", var_name="Bait", value_name="Score")
+    print(matrix)
+    reversed_matrix = matrix.rename(columns={'Target': 'Bait', 'Bait': 'Target'})
+    matrix = pandas.concat([matrix, reversed_matrix])
+    print(matrix)
+    print(matrix.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max"))
+    return matrix.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max")
 
 
 def parse_scores(score_file: TextIO) -> list[Interaction]:

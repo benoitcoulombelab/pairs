@@ -107,7 +107,24 @@ def interaction_score(pdb: TextIO, radius: float = 6,
         return len(interactions)
 
 
-def potential_interactor_atoms(chain: Chain) -> list[Atom]:
+def minimal_distance(residue_a: Residue, residue_b: Residue) -> float:
+    """
+    Returns distance between the closest potential interactor atoms of both residues.
+
+    :param residue_a: first residue
+    :param residue_b: second residue
+    :return: distance between the closest potential interactor atoms of both residues
+    """
+    atoms_a = potential_interactor_atoms(residue_a)
+    atoms_b = potential_interactor_atoms(residue_b)
+    min_distance = atoms_a[0] - atoms_b[0]
+    for atom_a in atoms_a:
+        for atom_b in atoms_b:
+            min_distance = min(atom_a - atom_b, min_distance)
+    return min_distance
+
+
+def potential_interactor_atoms(entity: Chain | Residue) -> list[Atom]:
     """
     Returns list of atoms that can interact with other residues' atoms.
 
@@ -115,11 +132,12 @@ def potential_interactor_atoms(chain: Chain) -> list[Atom]:
       * Atoms in the peptide bound (N, CA, C, O, OXT)
       * Hydrogen
 
-    :param chain: chain from PDB file
+    :param entity: chain or residue from PDB file
     :return: list of atoms that can interact with other residues' atoms
     """
     atoms = []
-    for residue in chain:
+    residues = [entity] if isinstance(entity, Residue) else entity.get_residues()
+    for residue in residues:
         for atom in residue:
             if atom.get_name() not in ["N", "CA", "C", "O", "OXT"] and not atom.get_name().startswith("H"):
                 atoms.append(atom)
@@ -173,7 +191,9 @@ def write_residues(residue_pairs: list[(Residue, Residue)], output_file: TextIO)
     :param output_file: output file
     """
     output_file.write(
-        "Chain A\tResidue number A\tResidue name A\tChain B\tResidue number B\tResidue name B\tBond type (guess)\n")
+        "Chain A\tResidue number A\tResidue name A\t"
+        "Chain B\tResidue number B\tResidue name B\t"
+        "Distance\tBond type (guess)\n")
     for residue_pair in residue_pairs:
         for i in range(0, 2):
             residue = residue_pair[i]
@@ -184,6 +204,9 @@ def write_residues(residue_pairs: list[(Residue, Residue)], output_file: TextIO)
             output_file.write("\t")
             output_file.write(f"{residue.get_resname()}")
             output_file.write("\t")
+        distance = minimal_distance(residue_pair[0], residue_pair[1])
+        output_file.write(f"{distance}")
+        output_file.write("\t")
         if is_charged_bond(residue_pair[0], residue_pair[1]):
             output_file.write("Charged")
         elif is_hydrophobic_bond(residue_pair[0], residue_pair[1]):
@@ -201,7 +224,8 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
     :param output_file: output file
     """
     output_file.write("Chain A\tResidue number A\tResidue name A\tAtom A\t"
-                      "Chain B\tResidue number B\tResidue name B\tAtom B\tBond type (guess)\n")
+                      "Chain B\tResidue number B\tResidue name B\tAtom B\t"
+                      "Distance\tBond type (guess)\n")
     for atom_pair in atom_pairs:
         for i in range(0, 2):
             atom = atom_pair[i]
@@ -215,6 +239,9 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
             output_file.write("\t")
             output_file.write(f"{atom.get_name()}")
             output_file.write("\t")
+        distance = minimal_distance(atom_pair[0], atom_pair[1])
+        output_file.write(f"{distance}")
+        output_file.write("\t")
         if is_charged_bond(atom_pair[0].get_parent(), atom_pair[1].get_parent()):
             output_file.write("Charged")
         elif is_hydrophobic_bond(atom_pair[0].get_parent(), atom_pair[1].get_parent()):

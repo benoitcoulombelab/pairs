@@ -14,6 +14,7 @@ from afpairs import InteractionScore
 @pytest.fixture
 def mock_testclass():
     _interaction_score = InteractionScore.interaction_score
+    _minimal_distance = InteractionScore.minimal_distance
     _potential_interactor_atoms = InteractionScore.potential_interactor_atoms
     _search_interactions = InteractionScore.search_interactions
     _get_chain = InteractionScore.get_chain
@@ -25,6 +26,7 @@ def mock_testclass():
     _smokesignal_on = smokesignal.on
     yield
     InteractionScore.interaction_score = _interaction_score
+    InteractionScore.minimal_distance = _minimal_distance
     InteractionScore.potential_interactor_atoms = _potential_interactor_atoms
     InteractionScore.search_interactions = _search_interactions
     InteractionScore.get_chain = _get_chain
@@ -201,7 +203,25 @@ def test_interaction_score_unused_chain_multiple_pdb(testdir, mock_testclass, ca
     assert err == "Chain C present in PDB but not used for scoring\n"
 
 
-def test_potential_interactor_atoms(mock_testclass):
+def test_minimal_distance(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    chain_a = structure[0]["A"]
+    chain_b = structure[0]["B"]
+    residue_a_pro = chain_a[6]
+    residue_b_asp = chain_b[3]
+    atoms_a_pro = [residue_a_pro["CB"], residue_a_pro["CG"]]
+    atoms_b_asp = [residue_b_asp["CG"], residue_b_asp["OD1"]]
+    InteractionScore.potential_interactor_atoms = MagicMock(side_effect=[atoms_a_pro, atoms_b_asp])
+    distance = InteractionScore.minimal_distance(residue_a_pro, residue_b_asp)
+    for atom_a_pro in atoms_a_pro:
+        for atom_b_asp in atoms_b_asp:
+            print(f"{atom_a_pro - atom_b_asp}")
+    assert abs(distance - 119.7040) < 0.001
+
+
+def test_potential_interactor_atoms_chain(mock_testclass):
     pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
     parser = PDBParser()
     structure = parser.get_structure("unknown", pdb)
@@ -240,6 +260,59 @@ def test_potential_interactor_atoms(mock_testclass):
     assert atoms[13] == chain_b[3]["CG"]
     assert atoms[14] == chain_b[3]["OD1"]
     assert atoms[15] == chain_b[3]["OD2"]
+
+
+def test_potential_interactor_atoms_residue(mock_testclass):
+    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
+    parser = PDBParser()
+    structure = parser.get_structure("unknown", pdb)
+    chain_a_met = structure[0]["A"][1]
+    atoms = InteractionScore.potential_interactor_atoms(chain_a_met)
+    assert len(atoms) == 4
+    assert atoms[0] == chain_a_met["CB"]
+    assert atoms[1] == chain_a_met["CG"]
+    assert atoms[2] == chain_a_met["SD"]
+    assert atoms[3] == chain_a_met["CE"]
+    chain_a_his = structure[0]["A"][2]
+    atoms = InteractionScore.potential_interactor_atoms(chain_a_his)
+    assert len(atoms) == 6
+    assert atoms[0] == chain_a_his["CB"]
+    assert atoms[1] == chain_a_his["CG"]
+    assert atoms[2] == chain_a_his["CD2"]
+    assert atoms[3] == chain_a_his["ND1"]
+    assert atoms[4] == chain_a_his["CE1"]
+    assert atoms[5] == chain_a_his["NE2"]
+    chain_a_pro = structure[0]["A"][6]
+    atoms = InteractionScore.potential_interactor_atoms(chain_a_pro)
+    assert len(atoms) == 3
+    assert atoms[0] == chain_a_pro["CB"]
+    assert atoms[1] == chain_a_pro["CG"]
+    assert atoms[2] == chain_a_pro["CD"]
+    chain_b_met = structure[0]["B"][1]
+    atoms = InteractionScore.potential_interactor_atoms(chain_b_met)
+    assert len(atoms) == 4
+    assert atoms[0] == chain_b_met["CB"]
+    assert atoms[1] == chain_b_met["CG"]
+    assert atoms[2] == chain_b_met["SD"]
+    assert atoms[3] == chain_b_met["CE"]
+    chain_b_tyr = structure[0]["B"][2]
+    atoms = InteractionScore.potential_interactor_atoms(chain_b_tyr)
+    assert len(atoms) == 8
+    assert atoms[0] == chain_b_tyr["CB"]
+    assert atoms[1] == chain_b_tyr["CG"]
+    assert atoms[2] == chain_b_tyr["CD1"]
+    assert atoms[3] == chain_b_tyr["CD2"]
+    assert atoms[4] == chain_b_tyr["CE1"]
+    assert atoms[5] == chain_b_tyr["CE2"]
+    assert atoms[6] == chain_b_tyr["OH"]
+    assert atoms[7] == chain_b_tyr["CZ"]
+    chain_b_asp = structure[0]["B"][3]
+    atoms = InteractionScore.potential_interactor_atoms(chain_b_asp)
+    assert len(atoms) == 4
+    assert atoms[0] == chain_b_asp["CB"]
+    assert atoms[1] == chain_b_asp["CG"]
+    assert atoms[2] == chain_b_asp["OD1"]
+    assert atoms[3] == chain_b_asp["OD2"]
 
 
 def test_search_interactions_residue(mock_testclass):
@@ -338,11 +411,15 @@ def test_write_residues(testdir, mock_testclass):
                      (structure[0]["A"][2], structure[0]["B"][2]),
                      (structure[0]["A"][3], structure[0]["B"][3])]
     output_file = "residues.txt"
+    InteractionScore.minimal_distance = MagicMock(side_effect=[9, 12, 10])
     InteractionScore.is_charged_bond = MagicMock(side_effect=[True, False, False])
     InteractionScore.is_hydrophobic_bond = MagicMock(side_effect=[True, False])
     InteractionScore.is_hydrogen_bond = MagicMock(side_effect=[True])
     with open(output_file, 'w') as output_out:
         InteractionScore.write_residues(residue_pairs=residue_pairs, output_file=output_out)
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][1], structure[0]["B"][1])
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][1], structure[0]["B"][1])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
@@ -353,10 +430,10 @@ def test_write_residues(testdir, mock_testclass):
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Chain A\tResidue number A\tResidue name A\t" \
                                        "Chain B\tResidue number B\tResidue name B\t" \
-                                       "Bond type (guess)\n"
-        assert output_in.readline() == "A\t1\tMET\tB\t1\tMET\tCharged\n"
-        assert output_in.readline() == "A\t2\tHIS\tB\t2\tTYR\tHydrophobic\n"
-        assert output_in.readline() == "A\t3\tGLY\tB\t3\tASP\tHydrogen\n"
+                                       "Distance\tBond type (guess)\n"
+        assert output_in.readline() == "A\t1\tMET\tB\t1\tMET\t9\tCharged\n"
+        assert output_in.readline() == "A\t2\tHIS\tB\t2\tTYR\t12\tHydrophobic\n"
+        assert output_in.readline() == "A\t3\tGLY\tB\t3\tASP\t10\tHydrogen\n"
 
 
 def test_write_atoms(testdir, mock_testclass):
@@ -367,11 +444,15 @@ def test_write_atoms(testdir, mock_testclass):
                   (structure[0]["A"][2]["CA"], structure[0]["B"][2]["O"]),
                   (structure[0]["A"][3]["CA"], structure[0]["B"][3]["CG"])]
     output_file = "atoms.txt"
+    InteractionScore.minimal_distance = MagicMock(side_effect=[9, 12, 10])
     InteractionScore.is_charged_bond = MagicMock(side_effect=[True, False, False])
     InteractionScore.is_hydrophobic_bond = MagicMock(side_effect=[True, False])
     InteractionScore.is_hydrogen_bond = MagicMock(side_effect=[True])
     with open(output_file, 'w') as output_out:
         InteractionScore.write_atoms(atom_pairs=atom_pairs, output_file=output_out)
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][1]["C"], structure[0]["B"][1]["N"])
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][2]["CA"], structure[0]["B"][2]["O"])
+    InteractionScore.minimal_distance.assert_any_call(structure[0]["A"][3]["CA"], structure[0]["B"][3]["CG"])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][1], structure[0]["B"][1])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][2], structure[0]["B"][2])
     InteractionScore.is_charged_bond.assert_any_call(structure[0]["A"][3], structure[0]["B"][3])
@@ -382,10 +463,10 @@ def test_write_atoms(testdir, mock_testclass):
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Chain A\tResidue number A\tResidue name A\tAtom A\t" \
                                        "Chain B\tResidue number B\tResidue name B\tAtom B\t" \
-                                       "Bond type (guess)\n"
-        assert output_in.readline() == "A\t1\tMET\tC\tB\t1\tMET\tN\tCharged\n"
-        assert output_in.readline() == "A\t2\tHIS\tCA\tB\t2\tTYR\tO\tHydrophobic\n"
-        assert output_in.readline() == "A\t3\tGLY\tCA\tB\t3\tASP\tCG\tHydrogen\n"
+                                       "Distance\tBond type (guess)\n"
+        assert output_in.readline() == "A\t1\tMET\tC\tB\t1\tMET\tN\t9\tCharged\n"
+        assert output_in.readline() == "A\t2\tHIS\tCA\tB\t2\tTYR\tO\t12\tHydrophobic\n"
+        assert output_in.readline() == "A\t3\tGLY\tCA\tB\t3\tASP\tCG\t10\tHydrogen\n"
 
 
 def test_get_residue_siblings(mock_testclass):

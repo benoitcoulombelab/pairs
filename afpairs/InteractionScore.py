@@ -251,21 +251,6 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
         output_file.write("\n")
 
 
-def get_residue_siblings(residue: Residue, distance: int = 2) -> list[Residue]:
-    """
-    Returns a list of residue's siblings.
-
-    If the distance is 2, this method will usually return 5 residues - 2 siblings on each side plus the residue itself.
-
-    :param residue: residue
-    :param distance: maximal distance between residue and it siblings (included)
-    :return: residue's siblings
-    """
-    chain = residue.get_parent()
-    seq_id = residue.get_id()[1]
-    return [chain[i] for i in range(seq_id - distance, seq_id + distance + 1) if i in chain]
-
-
 def is_charged_bond(first_residue: Residue, second_residue: Residue) -> bool:
     """
     Returns True if first_residue and second_residue are likely in a charged bond, False otherwise.
@@ -287,12 +272,7 @@ def is_hydrophobic_bond(first_residue: Residue, second_residue: Residue) -> bool
     :param second_residue: residue from second protein
     :return: true if first_residue and second_residue are likely in a hydrophobic bond, False otherwise
     """
-    first_siblings = get_residue_siblings(first_residue, 2)
-    first_charged_count = len([residue for residue in first_siblings if is_hydrophobic_residue(residue)])
-    second_siblings = get_residue_siblings(second_residue, 2)
-    second_charged_count = len([residue for residue in second_siblings if is_hydrophobic_residue(residue)])
-    return (float(first_charged_count) / len(first_siblings) >= 0.5 and
-            float(second_charged_count) / len(second_siblings) >= 0.5)
+    return is_hydrophobic_residue(first_residue) and is_hydrophobic_residue(second_residue)
 
 
 def is_hydrophobic_residue(residue: Residue) -> bool:

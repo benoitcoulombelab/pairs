@@ -469,27 +469,6 @@ def test_write_atoms(testdir, mock_testclass):
         assert output_in.readline() == "A\t3\tGLY\tCA\tB\t3\tASP\tCG\t10\tHydrogen\n"
 
 
-def test_get_residue_siblings(mock_testclass):
-    pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
-    parser = PDBParser()
-    structure = parser.get_structure("unknown", pdb)
-    residue = structure[0]["A"][10]
-    residues = InteractionScore.get_residue_siblings(residue)
-    assert residues[0] == structure[0]["A"][8]
-    assert residues[1] == structure[0]["A"][9]
-    assert residues[2] == structure[0]["A"][10]
-    assert residues[3] == structure[0]["A"][11]
-    assert residues[4] == structure[0]["A"][12]
-    residues = InteractionScore.get_residue_siblings(residue, distance=3)
-    assert residues[0] == structure[0]["A"][7]
-    assert residues[1] == structure[0]["A"][8]
-    assert residues[2] == structure[0]["A"][9]
-    assert residues[3] == structure[0]["A"][10]
-    assert residues[4] == structure[0]["A"][11]
-    assert residues[5] == structure[0]["A"][12]
-    assert residues[6] == structure[0]["A"][13]
-
-
 def test_is_charged_bond(mock_testclass):
     pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
     parser = PDBParser()

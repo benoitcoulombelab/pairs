@@ -6,17 +6,14 @@ params.step = "all"
 log.info """\
          AlphaFold-pairs
          ===================================
-         baits   : ${params.baits}
-         targets : ${params.targets}
+         fasta   : ${params.fasta}
          step    : ${params.step}
          outdir  : ${params.outdir}
          """
         .stripIndent()
 
 workflow {
-  baits = Channel.fromPath(params.baits, checkIfExists: params.step != "alphafold")
-  targets = Channel.fromPath(params.targets, checkIfExists: params.step != "alphafold")
-  fasta = fasta_pairs(baits, targets) | flatten
+  fasta = Channel.fromPath(params.fasta, checkIfExists: true)
   if (params.step != "alphafold") {
     fasta_prepare = prepare_alphafold(fasta)
   }
@@ -28,23 +25,9 @@ workflow {
   }
 }
 
-process fasta_pairs {
-  input:
-  file(baits)
-  file(targets)
-
-  output:
-  file("proteins/*.fasta")
-
-  """
-  mkdir proteins
-  fasta-pairs --baits ${baits} --targets ${targets} --output proteins -u -i
-  """
-}
-
 process prepare_alphafold {
   publishDir "${params.outdir}", mode: "copy"
-  stageInMode = "copy"
+  stageInMode = "symlink"
 
   input:
   file(fasta)
@@ -54,7 +37,7 @@ process prepare_alphafold {
 
   script:
   """
-  mkdir prepare
+  mkdir -p prepare
   cp ${fasta} prepare
   bash $baseDir/alphafold.sh ${fasta} prepare "prepare"
   """
@@ -62,7 +45,7 @@ process prepare_alphafold {
 
 process alphafold {
   publishDir "${params.outdir}", mode: "copy"
-  stageInMode = "copy"
+  stageInMode = "symlink"
 
   input:
   tuple file(fasta), file(prepare)
@@ -72,11 +55,9 @@ process alphafold {
 
   script:
   """
-    echo ${fasta}
-    echo ${prepare}
-    mkdir alphafold
-    cp -r ${prepare} alphafold
-    rm -r ${prepare}
-    bash $baseDir/alphafold.sh ${fasta} alphafold "alphafold"
-    """
+  mkdir -p alphafold
+  cp -r ${prepare} alphafold
+  rm -r ${prepare}
+  bash $baseDir/alphafold.sh ${fasta} alphafold "alphafold"
+  """
 }

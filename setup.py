@@ -14,16 +14,23 @@ setup(
         "License :: OSI Approved :: GNU General Public License version 3"
     ],
     install_requires=[
-        "biopython>=1.81"
+        "biopython>=1.81",
+        "pandas>=2.1.0",
+        "smokesignal>=0.7",
+        "tqdm>=4.66.1"
     ],
     entry_points={
         "console_scripts": [
+            "consensus-interface = afpairs.ConsensusInterface:main",
+            "delete-fasta = afpairs.DeleteFasta:main",
             "fasta-id = afpairs.FastaId:main",
             "fasta-pairs = afpairs.FastaPairs:main",
+            "id-convert = afpairs.IdConvert:main",
             "interaction-score = afpairs.InteractionScore:main",
-            "keep-gene-proteins = afpairs.KeepGeneProteins:main",
             "multi-interaction-score = afpairs.MultiInteractionScore:main",
+            "random-sequences = afpairs.RandomSequences:main",
             "score-matrix = afpairs.ScoreMatrix:main",
+            "split-fasta = afpairs.SplitFasta:main",
         ]
     }
 )

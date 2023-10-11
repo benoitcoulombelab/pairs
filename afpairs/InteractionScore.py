@@ -117,7 +117,14 @@ def interaction_score(pdb: TextIO, radius: float = 6,
         return score
 
 
-def minimal_distance(residue_a: Residue.Residue, residue_b: Residue.Residue) -> float:
+def minimal_distance(residue_a: Residue, residue_b: Residue) -> float:
+    """
+    Returns distance between the closest potential interactor atoms of both residues.
+
+    :param residue_a: first residue
+    :param residue_b: second residue
+    :return: distance between the closest potential interactor atoms of both residues
+    """
     atoms_a = potential_interactor_atoms(residue_a)
     atoms_b = potential_interactor_atoms(residue_b)
     min_distance = atoms_a[0] - atoms_b[0]
@@ -126,7 +133,8 @@ def minimal_distance(residue_a: Residue.Residue, residue_b: Residue.Residue) -> 
             min_distance = min(atom_a - atom_b, min_distance)
     return min_distance
 
-def potential_interactor_atoms(chain: Chain) -> list[Atom]:
+
+def potential_interactor_atoms(entity: Chain | Residue) -> list[Atom]:
     """
     Returns list of atoms that can interact with other residues' atoms.
 
@@ -134,11 +142,12 @@ def potential_interactor_atoms(chain: Chain) -> list[Atom]:
       * Atoms in the peptide bound (N, CA, C, O, OXT)
       * Hydrogen
 
-    :param chain: chain from PDB file
+    :param entity: chain or residue from PDB file
     :return: list of atoms that can interact with other residues' atoms
     """
     atoms = []
-    for residue in chain:
+    residues = [entity] if isinstance(entity, Residue) else entity.get_residues()
+    for residue in residues:
         for atom in residue:
             if atom.get_name() not in ["N", "CA", "C", "O", "OXT"] and not atom.get_name().startswith("H"):
                 atoms.append(atom)

@@ -201,7 +201,9 @@ def write_residues(residue_pairs: list[(Residue, Residue)], output_file: TextIO)
     :param output_file: output file
     """
     output_file.write(
-        "Chain A\tResidue number A\tResidue name A\tChain B\tResidue number B\tResidue name B\tBond type (guess)\n")
+        "Chain A\tResidue number A\tResidue name A\t"
+        "Chain B\tResidue number B\tResidue name B\t"
+        "Distance\tBond type (guess)\n")
     for residue_pair in residue_pairs:
         for i in range(0, 2):
             residue = residue_pair[i]
@@ -212,6 +214,9 @@ def write_residues(residue_pairs: list[(Residue, Residue)], output_file: TextIO)
             output_file.write("\t")
             output_file.write(f"{residue.get_resname()}")
             output_file.write("\t")
+        distance = minimal_distance(residue_pair[0], residue_pair[1])
+        output_file.write(f"{distance}")
+        output_file.write("\t")
         if is_charged_bond(residue_pair[0], residue_pair[1]):
             output_file.write("Charged")
         elif is_hydrophobic_bond(residue_pair[0], residue_pair[1]):
@@ -229,7 +234,8 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
     :param output_file: output file
     """
     output_file.write("Chain A\tResidue number A\tResidue name A\tAtom A\t"
-                      "Chain B\tResidue number B\tResidue name B\tAtom B\tBond type (guess)\n")
+                      "Chain B\tResidue number B\tResidue name B\tAtom B\t"
+                      "Distance\tBond type (guess)\n")
     for atom_pair in atom_pairs:
         for i in range(0, 2):
             atom = atom_pair[i]
@@ -243,6 +249,9 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
             output_file.write("\t")
             output_file.write(f"{atom.get_name()}")
             output_file.write("\t")
+        distance = minimal_distance(atom_pair[0], atom_pair[1])
+        output_file.write(f"{distance}")
+        output_file.write("\t")
         if is_charged_bond(atom_pair[0].get_parent(), atom_pair[1].get_parent()):
             output_file.write("Charged")
         elif is_hydrophobic_bond(atom_pair[0].get_parent(), atom_pair[1].get_parent()):
@@ -250,21 +259,6 @@ def write_atoms(atom_pairs: list[(Atom, Atom)], output_file: TextIO):
         elif is_hydrogen_bond(atom_pair[0].get_parent(), atom_pair[1].get_parent()):
             output_file.write("Hydrogen")
         output_file.write("\n")
-
-
-def get_residue_siblings(residue: Residue, distance: int = 2) -> list[Residue]:
-    """
-    Returns a list of residue's siblings.
-
-    If the distance is 2, this method will usually return 5 residues - 2 siblings on each side plus the residue itself.
-
-    :param residue: residue
-    :param distance: maximal distance between residue and it siblings (included)
-    :return: residue's siblings
-    """
-    chain = residue.get_parent()
-    seq_id = residue.get_id()[1]
-    return [chain[i] for i in range(seq_id - distance, seq_id + distance + 1) if i in chain]
 
 
 def is_charged_bond(first_residue: Residue, second_residue: Residue) -> bool:
@@ -288,12 +282,7 @@ def is_hydrophobic_bond(first_residue: Residue, second_residue: Residue) -> bool
     :param second_residue: residue from second protein
     :return: true if first_residue and second_residue are likely in a hydrophobic bond, False otherwise
     """
-    first_siblings = get_residue_siblings(first_residue, 2)
-    first_charged_count = len([residue for residue in first_siblings if is_hydrophobic_residue(residue)])
-    second_siblings = get_residue_siblings(second_residue, 2)
-    second_charged_count = len([residue for residue in second_siblings if is_hydrophobic_residue(residue)])
-    return (float(first_charged_count) / len(first_siblings) >= 0.5 and
-            float(second_charged_count) / len(second_siblings) >= 0.5)
+    return is_hydrophobic_residue(first_residue) and is_hydrophobic_residue(second_residue)
 
 
 def is_hydrophobic_residue(residue: Residue) -> bool:

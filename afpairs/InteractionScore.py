@@ -106,7 +106,7 @@ def interaction_score(pdb: TextIO, radius: float = 6,
         score = 0
         for interaction in interactions:
             distance = minimal_distance(interaction[0], interaction[1])
-            score = score + 1 / distance
+            score = score + 10 / (2 ** distance)
     if weight:
         protein_pair_weight = 0
         for chain_name in first_chains + second_chains:

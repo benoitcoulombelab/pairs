@@ -34,7 +34,7 @@ Install requirements:
 Install PAIRS.
 
 ```shell
-pip install git+https://github.com/benoitcoulombelab/https://github.com/benoitcoulombelab/pairs.git
+pip install git+https://github.com/benoitcoulombelab/pairs.git
 ```
 
 ## Running PAIRS

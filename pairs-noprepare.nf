@@ -4,7 +4,7 @@ params.outdir = "$baseDir"
 params.step = "all"
 
 log.info """\
-         AlphaFold-pairs
+         PAIRS
          ===================================
          fasta   : ${params.fasta}
          step    : ${params.step}

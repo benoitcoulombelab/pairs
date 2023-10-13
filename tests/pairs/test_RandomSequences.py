@@ -8,7 +8,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from afpairs import RandomSequences
+from pairs import RandomSequences
 
 
 @pytest.fixture

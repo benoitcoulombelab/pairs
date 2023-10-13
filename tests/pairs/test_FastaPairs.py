@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, ANY
 import pytest
 from Bio import SeqIO
 
-from afpairs import FastaPairs
+from pairs import FastaPairs
 
 
 @pytest.fixture

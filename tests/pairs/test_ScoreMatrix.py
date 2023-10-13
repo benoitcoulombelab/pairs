@@ -7,7 +7,7 @@ import numpy
 import pandas
 import pytest
 
-from afpairs import ScoreMatrix
+from pairs import ScoreMatrix
 
 
 @pytest.fixture

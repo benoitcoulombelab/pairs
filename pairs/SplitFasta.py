@@ -6,7 +6,7 @@ from typing import TextIO
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 
-from afpairs import FastaId
+from pairs import FastaId
 
 
 def dir_path(string: str):
@@ -32,7 +32,7 @@ def split_fasta(fasta: TextIO, output_dir: str):
     Splits FASTA file into one file per sequence.
 
     The name of the output file will be the "{id}.fasta where" "{id}" is the id returned by
-    :func:`~afpairs.FastaId.fasta_id`
+    :func:`~pairs.FastaId.fasta_id`
 
     :param fasta: FASTA file containing multiple sequences
     :param output_dir: directory where to write files

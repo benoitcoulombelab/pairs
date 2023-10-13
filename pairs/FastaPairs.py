@@ -3,7 +3,7 @@ import os
 
 from Bio import SeqIO, SeqRecord
 
-from afpairs import FastaId
+from pairs import FastaId
 
 
 def dir_path(string: str):

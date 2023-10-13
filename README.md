@@ -1,13 +1,13 @@
-# AlphaFold-pairs
+# PAIRS - Built using AlphaFold
 
 ### This software scores protein-protein interactions using AlphaFold-Multimer's output
 
-[See AlphaFold-pairs paper](https://www.biorxiv.org/content/10.1101/2023.08.29.555151v1)
+[See PAIRS paper](https://www.biorxiv.org/content/10.1101/2023.08.29.555151v1)
 
 #### Contents
 
-* [Install AlphaFold-pairs](#install)
-* [Running AlphaFold-pairs](#running-alphafold-pairs)
+* [Install PAIRS](#install)
+* [Running PAIRS](#running-pairs)
     * [Prepare FASTA files](#prepare-fasta-files)
         * [Proteins with an ambigous amino acid](proteins-with-an-ambigous-amino-acid)
     * [Running AlphaFold-Multimer using Nextflow](#running-alphafold-multimer-using-nextflow)
@@ -31,13 +31,13 @@ Install requirements:
 * [python version 3.7.4 or newer](https://www.python.org)
 * [Git](https://git-scm.com)
 
-Install AlphaFold-pairs.
+Install PAIRS.
 
 ```shell
-pip install git+https://github.com/benoitcoulombelab/https://github.com/benoitcoulombelab/alphafold-pairs.git
+pip install git+https://github.com/benoitcoulombelab/https://github.com/benoitcoulombelab/pairs.git
 ```
 
-## Running AlphaFold-pairs
+## Running PAIRS
 
 ### Prepare FASTA files
 
@@ -67,7 +67,7 @@ delete-fasta -s -b backup_folder fasta_pairs/*.fasta
 ### Running AlphaFold-Multimer using Nextflow
 
 ```shell
-nextflow run alphafold-pairs.nf \
+nextflow run pairs.nf \
     --fasta 'fasta_pairs/*.fasta' \
     --outdir "$PWD/output"
 ```
@@ -110,14 +110,14 @@ To make it possible to run the "prepare" step separately, you must patch AlphaFo
 #### Running only prepare or alphafold step
 
 ```shell
-nextflow run alphafold-pairs.nf \
+nextflow run pairs.nf \
     --step prepare \
     --fasta 'fasta_pairs/*.fasta' \
     --outdir "$PWD/output"
 ```
 
 ```shell
-nextflow run alphafold-pairs.nf \
+nextflow run pairs.nf \
     --step alphafold \
     --fasta 'fasta_pairs/*.fasta' \
     --outdir "$PWD/output"
@@ -131,15 +131,15 @@ If you don't care about optimizing CPU/GPU usage, you can run the alternative pi
 normally (without patching).
 
 ```shell
-nextflow run alphafold-pairs-noprepare.nf \
+nextflow run pairs-noprepare.nf \
     --fasta 'fasta_pairs/*.fasta' \
     --outdir "$PWD/output"
 ```
 
 ## Protein complexes
 
-To find all binary protein-protein interactions of a complex, start by running the normal AlphaFold-pairs pipeline.
-[Running AlphaFold-pairs](#running-alphafold-pairs)
+To find all binary protein-protein interactions of a complex, start by running the normal PAIRS pipeline.
+[Running PAIRS](#running-pairs)
 
 Once AlphaFold-Multimer completes for all FASTA files, use `multi-interaction-score` script.
 

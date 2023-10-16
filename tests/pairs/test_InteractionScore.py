@@ -46,7 +46,7 @@ def test_main(testdir, mock_testclass, capsys):
     with open(stdin_file, 'r') as stdin_in, patch('sys.stdin', stdin_in):
         InteractionScore.main()
     InteractionScore.interaction_score.assert_called_once_with(
-        pdb=ANY, radius=6.0, weight=False, first_chains=["A"], second_chains=["B"],
+        pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["A"], second_chains=["B"],
         residues=None, atoms=None, partial=False)
     pdb = InteractionScore.interaction_score.call_args.kwargs['pdb']
     assert isinstance(pdb, TextIOWrapper)
@@ -66,10 +66,10 @@ def test_main_parameters(testdir, mock_testclass):
     output_file = "output.txt"
     InteractionScore.interaction_score = MagicMock(return_value="2.3")
     smokesignal.on = MagicMock()
-    InteractionScore.main(["-a", "A,B", "-b", "C,D", "-r", "8", "-w",
+    InteractionScore.main(["-a", "A,B", "-b", "C,D", "-r", "8", "-w", "-c",
                            "-R", residue_pairs_file, "-A", atom_pairs_file, "-o", output_file, "-P", input_file])
     InteractionScore.interaction_score.assert_called_once_with(
-        pdb=ANY, radius=8, weight=True, first_chains=["A", "B"], second_chains=["C", "D"],
+        pdb=ANY, radius=8, weight=True, count=True, first_chains=["A", "B"], second_chains=["C", "D"],
         residues=ANY, atoms=ANY, partial=True)
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].name == input_file
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].mode == "r"
@@ -92,11 +92,11 @@ def test_main_long_parameters(testdir, mock_testclass):
     output_file = "output.txt"
     InteractionScore.interaction_score = MagicMock(return_value="2.3")
     smokesignal.on = MagicMock()
-    InteractionScore.main(["--first", "A,B", "--second", "C,D", "--radius", "8", "--weight",
+    InteractionScore.main(["--first", "A,B", "--second", "C,D", "--radius", "8", "--weight", "--count",
                            "--residues", residue_pairs_file, "--atoms", atom_pairs_file, "--output", output_file,
                            "--partial", input_file])
     InteractionScore.interaction_score.assert_called_once_with(
-        pdb=ANY, radius=8, weight=True, first_chains=["A", "B"], second_chains=["C", "D"],
+        pdb=ANY, radius=8, weight=True, count=True, first_chains=["A", "B"], second_chains=["C", "D"],
         residues=ANY, atoms=ANY, partial=True)
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].name == input_file
     assert InteractionScore.interaction_score.call_args.kwargs["pdb"].mode == "r"
@@ -114,9 +114,13 @@ def test_main_long_parameters(testdir, mock_testclass):
 def test_interaction_score(testdir, mock_testclass):
     pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
     score = InteractionScore.interaction_score(pdb=pdb)
-    assert score == 580
+    assert abs(score - 321.92) < 0.01, f"{score}"
+    score = InteractionScore.interaction_score(pdb=pdb, count=True)
+    assert score == 580, f"{score}"
     score = InteractionScore.interaction_score(pdb=pdb, weight=True)
-    assert abs(score - 31.48) < 0.01
+    assert abs(score - 17.47) < 0.01, f"{score}"
+    score = InteractionScore.interaction_score(pdb=pdb, weight=True, count=True)
+    assert abs(score - 31.48) < 0.01, f"{score}"
 
 
 def test_interaction_score_write_residues(testdir, mock_testclass):

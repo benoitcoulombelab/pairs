@@ -25,6 +25,8 @@ def main(argv: list[str] = None):
                         help="Chains of first protein separated by ','  (default: %(default)s)")
     parser.add_argument('-b', '--second', default="B",
                         help="Chains of second protein separated by ','  (default: %(default)s)")
+    parser.add_argument('-c', '--count', action="store_true", default=False,
+                        help="Score is the number of residues at a distance less than radius parameter")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
@@ -45,14 +47,14 @@ def main(argv: list[str] = None):
     args.second = args.second.split(',')
     smokesignal.on(MISSING_CHAIN_EVENT, warn_missing_chain, max_calls=1)
 
-    score = interaction_score(pdb=args.input, radius=args.radius, weight=args.weight,
+    score = interaction_score(pdb=args.input, radius=args.radius, weight=args.weight, count=args.count,
                               first_chains=args.first, second_chains=args.second, residues=args.residues,
                               atoms=args.atoms, partial=args.partial)
     args.output.write(f"{score}\n")
 
 
 def interaction_score(pdb: TextIO, radius: float = 6,
-                      weight: bool = False,
+                      weight: bool = False, count: bool = False,
                       first_chains: list[str] = ["A"],
                       second_chains: list[str] = ["B"],
                       residues: TextIO = None,
@@ -66,6 +68,7 @@ def interaction_score(pdb: TextIO, radius: float = 6,
     :param pdb: PDB file
     :param radius: maximal distance between two residues' atoms to consider that the two residues interact
     :param weight: if True, normalize score by proteins' weight
+    :param count: if True, score is the number of residue pairs below radius
     :param first_chains: chains of the first protein
     :param second_chains: chains of the second protein
     :param residues: write residues pairs to this file, if specified
@@ -93,18 +96,25 @@ def interaction_score(pdb: TextIO, radius: float = 6,
         write_residues(interactions, residues)
 
     if atoms:
-        interactions = search_interactions(neighbor_search=neighbor_search, radius=radius, level='A',
-                                           first_chains=first_chains, second_chains=second_chains)
-        write_atoms(interactions, atoms)
+        atoms_interactions = search_interactions(neighbor_search=neighbor_search, radius=radius, level='A',
+                                                 first_chains=first_chains, second_chains=second_chains)
+        write_atoms(atoms_interactions, atoms)
 
+    if count:
+        score = len(interactions)
+    else:
+        score = 0
+        for interaction in interactions:
+            distance = minimal_distance(interaction[0], interaction[1])
+            score = score + 10 / (2 ** distance)
     if weight:
         protein_pair_weight = 0
         for chain_name in first_chains + second_chains:
             protein_sequence = seq1("".join(residue.get_resname() for residue in structure[0][chain_name]))
             protein_pair_weight = protein_pair_weight + molecular_weight(protein_sequence, seq_type="protein")
-        return len(interactions) / math.log2(protein_pair_weight)
+        return score / math.log2(protein_pair_weight)
     else:
-        return len(interactions)
+        return score
 
 
 def minimal_distance(residue_a: Residue, residue_b: Residue) -> float:

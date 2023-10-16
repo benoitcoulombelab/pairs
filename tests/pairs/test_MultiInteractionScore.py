@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, ANY, patch
 import pytest
 import smokesignal
 
-from afpairs import InteractionScore, MultiInteractionScore
+from pairs import InteractionScore, MultiInteractionScore
 
 
 @pytest.fixture

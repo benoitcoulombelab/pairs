@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, ANY
 
 import pytest
 
-from afpairs import ConsensusInterface
-from afpairs.ConsensusInterface import ResiduePair, Residue, ConsensusResiduePair
+from pairs import ConsensusInterface
+from pairs.ConsensusInterface import ResiduePair, Residue, ConsensusResiduePair
 
 
 @pytest.fixture

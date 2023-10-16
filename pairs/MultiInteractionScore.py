@@ -7,7 +7,7 @@ from typing import TextIO
 import smokesignal
 import tqdm
 
-from afpairs import InteractionScore
+from pairs import InteractionScore
 
 
 def file_path(string: str):

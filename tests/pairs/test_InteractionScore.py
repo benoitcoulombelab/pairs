@@ -8,7 +8,7 @@ import pytest
 import smokesignal
 from Bio.PDB import PDBParser, NeighborSearch
 
-from afpairs import InteractionScore
+from pairs import InteractionScore
 
 
 @pytest.fixture

@@ -36,6 +36,8 @@ def main(argv: list[str] = None):
     parser.add_argument('-w', '--weight', action="store_true", default=False,
                         help="Normalize count by protein pair weight - "
                              "'count / log2(sum weight of both proteins)'")
+    parser.add_argument('-c', '--count', action="store_true", default=False,
+                        help="Score is the number of residues at a distance less than radius parameter")
     parser.add_argument('-p', '--progress', action="store_true", default=False,
                         help="Show progress bar")
     parser.add_argument('-P', '--partial', action="store_true", default=False,
@@ -55,7 +57,7 @@ def main(argv: list[str] = None):
     smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT, InteractionScore.warn_missing_chain, max_calls=1)
 
     multi_interaction_score(input_files=args.inputs, output_file=args.output, name=args.name,
-                            radius=args.radius, weight=args.weight, progress=args.progress,
+                            radius=args.radius, weight=args.weight, count=args.count, progress=args.progress,
                             first_chains=args.first, second_chains=args.second,
                             partial=args.partial,
                             mapping_file=args.mapping, source_column=args.source_column - 1,
@@ -63,7 +65,7 @@ def main(argv: list[str] = None):
 
 
 def multi_interaction_score(input_files: list[str], output_file: TextIO = sys.stdout, name: str = r"([\w-]+)__([\w-]+)",
-                            radius: float = 6, weight: bool = False, progress: bool = False,
+                            radius: float = 6, weight: bool = False, count: bool = False, progress: bool = False,
                             first_chains: list[str] = ["A"], second_chains: list[str] = ["B"],
                             partial: bool = False,
                             mapping_file: TextIO = None, source_column: int = 0, converted_column: int = 1):
@@ -75,6 +77,7 @@ def multi_interaction_score(input_files: list[str], output_file: TextIO = sys.st
     :param name: regular expression to obtain protein/gene names based on PDB filename
     :param radius: maximal distance between two residues' atoms to consider that the two residues interact
     :param weight: if True, normalize score by proteins' weight
+    :param count: if True, score is the number of residue pairs below radius
     :param progress: if True, show progress bar
     :param first_chains: chains of the first protein
     :param second_chains: chains of the second protein
@@ -96,7 +99,7 @@ def multi_interaction_score(input_files: list[str], output_file: TextIO = sys.st
         target = mappings[target] if target in mappings else target
         with open(input_file, 'r') as input_in:
             score = InteractionScore.interaction_score(
-                pdb=input_in, radius=radius, weight=weight,
+                pdb=input_in, radius=radius, weight=weight, count=count,
                 first_chains=first_chains, second_chains=second_chains, partial=partial)
         output_file.write(f"{bait}\t{target}\t{score}\n")
 

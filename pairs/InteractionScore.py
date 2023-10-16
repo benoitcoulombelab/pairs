@@ -68,7 +68,7 @@ def interaction_score(pdb: TextIO, radius: float = 6,
     :param pdb: PDB file
     :param radius: maximal distance between two residues' atoms to consider that the two residues interact
     :param weight: if True, normalize score by proteins' weight
-    :param count: if True, score is the number of residues below radius
+    :param count: if True, score is the number of residue pairs below radius
     :param first_chains: chains of the first protein
     :param second_chains: chains of the second protein
     :param residues: write residues pairs to this file, if specified
@@ -96,9 +96,9 @@ def interaction_score(pdb: TextIO, radius: float = 6,
         write_residues(interactions, residues)
 
     if atoms:
-        interactions = search_interactions(neighbor_search=neighbor_search, radius=radius, level='A',
-                                           first_chains=first_chains, second_chains=second_chains)
-        write_atoms(interactions, atoms)
+        atoms_interactions = search_interactions(neighbor_search=neighbor_search, radius=radius, level='A',
+                                                 first_chains=first_chains, second_chains=second_chains)
+        write_atoms(atoms_interactions, atoms)
 
     if count:
         score = len(interactions)

@@ -308,12 +308,19 @@ def test_alphafold_statistics(testdir, mock_testclass):
     alphafold_statistics = MultiInteractionScore.alphafold_statistics(directory)
     InteractionScore.interaction_score.assert_any_call(
         pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["A"], second_chains=["B"], partial=False)
+    InteractionScore.interaction_score.assert_any_call(
+        pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["B"], second_chains=["C"], partial=False)
     assert InteractionScore.interaction_score.call_args_list[0].kwargs["pdb"].name\
            == os.path.join(directory, "ranked_0.pdb")
+    assert InteractionScore.interaction_score.call_args_list[0].kwargs["first_chains"] == ["A"]
+    assert InteractionScore.interaction_score.call_args_list[0].kwargs["second_chains"] == ["B"]
     unrelaxed_files_called = [InteractionScore.interaction_score.call_args_list[i].kwargs["pdb"].name
                               for i in range(1, len(unrelaxed_files) + 1)]
     for unrelaxed_file in unrelaxed_files:
         assert os.path.join(directory, unrelaxed_file) in unrelaxed_files_called
+    for i in range(1, len(unrelaxed_files)+1):
+        assert InteractionScore.interaction_score.call_args_list[i].kwargs["first_chains"] == ["B"]
+        assert InteractionScore.interaction_score.call_args_list[i].kwargs["second_chains"] == ["C"]
     assert alphafold_statistics.directory == directory
     assert alphafold_statistics.ranked0_score == 8.2
     assert abs(alphafold_statistics.ranked0_confidence - 0.4154) < 0.0001, \

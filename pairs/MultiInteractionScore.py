@@ -35,9 +35,9 @@ def main(argv: list[str] = None):
                              "(default: %(default)s)")
     parser.add_argument('-w', '--weight', action="store_true", default=False,
                         help="Normalize count by protein pair weight - "
-                             "'count / log2(sum weight of both proteins)'")
+                             "'score / log2(sum weight of both proteins)'")
     parser.add_argument('-c', '--count', action="store_true", default=False,
-                        help="Score is the number of residues at a distance less than radius parameter")
+                        help="Score is the number of residues pairs at a distance less than radius parameter")
     parser.add_argument('-p', '--progress', action="store_true", default=False,
                         help="Show progress bar")
     parser.add_argument('-P', '--partial', action="store_true", default=False,

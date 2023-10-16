@@ -26,17 +26,17 @@ def main(argv: list[str] = None):
     parser.add_argument('-b', '--second', default="B",
                         help="Chains of second protein separated by ','  (default: %(default)s)")
     parser.add_argument('-c', '--count', action="store_true", default=False,
-                        help="Score is the number of residues at a distance less than radius parameter")
+                        help="Score is the number of residues pairs at a distance less than radius parameter")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
     parser.add_argument('-w', '--weight', action="store_true", default=False,
                         help="Normalize count by protein pair weight - "
-                             "'count / log2(sum weight of both proteins)'")
+                             "'score / log2(sum weight of both proteins)'")
     parser.add_argument('-R', '--residues', type=argparse.FileType('w'), metavar="RESIDUES",
-                        help="Save pairs of residues in tab separated file %(metavar)s")
+                        help="Save residues pairs in tab separated file %(metavar)s")
     parser.add_argument('-A', '--atoms', type=argparse.FileType('w'), metavar="ATOMS",
-                        help="Save pairs of atoms in tab separated file %(metavar)s")
+                        help="Save atoms pairs in tab separated file %(metavar)s")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
                         help="Output file where to write PPI score")
     parser.add_argument('-P', '--partial', action="store_true", default=False,

@@ -173,8 +173,6 @@ def alphafold_statistics(directory: str, radius: float = 6, weight: bool = False
         unrelaxed_scores = []
         unrelaxed_first_chains = [str(bytes([bytes(chain, 'utf-8')[0] + 1]))[2] for chain in first_chains]
         unrelaxed_second_chains = [str(bytes([bytes(chain, 'utf-8')[0] + 1]))[2] for chain in second_chains]
-        print(f"unrelaxed_first_chains={unrelaxed_first_chains}")
-        print(f"unrelaxed_second_chains={unrelaxed_second_chains}")
         for unrelaxed_file in unrelaxed_files:
             with open(unrelaxed_file, 'r') as input_in:
                 unrelaxed_scores.append(InteractionScore.interaction_score(

@@ -28,6 +28,7 @@ setup(
             "id-convert = pairs.IdConvert:main",
             "interaction-score = pairs.InteractionScore:main",
             "multi-interaction-score = pairs.MultiInteractionScore:main",
+            "pdb-fasta = pairs.PdbFasta:main",
             "random-sequences = pairs.RandomSequences:main",
             "score-matrix = pairs.ScoreMatrix:main",
             "split-fasta = pairs.SplitFasta:main",

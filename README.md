@@ -1,4 +1,6 @@
-# PAIRS - Built using AlphaFold
+# PAIRS
+
+![PAIRS - Built using AlphaFold - Logo](pairs.png)
 
 ### This software scores protein-protein interactions using AlphaFold-Multimer's output
 

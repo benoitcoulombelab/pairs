@@ -46,6 +46,7 @@ then
 fi
 
 step_parameters=("--use_gpu_relax=True" "--use_precomputed_msas=True")
+#step_parameters+=("--use_checkpoints=True")  # Use checkpoints for long processes
 if [ "${step}" == "prepare" ]
 then
   step_parameters=("--prepare" "--use_gpu_relax=False" "--use_precomputed_msas=False")

@@ -20,6 +20,7 @@ then
   module load alphafold/2.3.2
 fi
 data_dir="$ALPHAFOLD_DATADIR"
+pdb_mmcif_dir="$ALPHAFOLD_PDB_MMCIF"
 
 ### Check values of some environment variables
 echo SLURM_JOB_ID="$SLURM_JOB_ID"
@@ -65,8 +66,8 @@ run_alphafold.py \
     --model_preset=multimer \
     --small_bfd_database_path="${data_dir}/small_bfd/bfd-first_non_consensus_sequences.fasta" \
     --mgnify_database_path="${data_dir}/mgnify/mgy_clusters_2022_05.fa" \
-    --template_mmcif_dir="${data_dir}/pdb_mmcif/mmcif_files" \
-    --obsolete_pdbs_path="${data_dir}/pdb_mmcif/obsolete.dat" \
+    --template_mmcif_dir="${pdb_mmcif_dir}/mmcif_files" \
+    --obsolete_pdbs_path="${pdb_mmcif_dir}/obsolete.dat" \
     --pdb_seqres_database_path="${data_dir}/pdb_seqres/pdb_seqres.txt" \
     --uniprot_database_path="${data_dir}/uniprot/uniprot.fasta" \
     --uniref90_database_path="${data_dir}/uniref90/uniref90.fasta" \

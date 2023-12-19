@@ -85,11 +85,8 @@ def unique_matrix(df: pandas.DataFrame):
     """
     df["Target"] = df.index
     matrix = pandas.melt(df, id_vars="Target", var_name="Bait", value_name="Score")
-    print(matrix)
     reversed_matrix = matrix.rename(columns={'Target': 'Bait', 'Bait': 'Target'})
     matrix = pandas.concat([matrix, reversed_matrix])
-    print(matrix)
-    print(matrix.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max"))
     return matrix.pivot_table(index="Target", columns="Bait", values="Score", aggfunc="max")
 
 

@@ -1,16 +1,21 @@
 #!/bin/bash
 
-# exit when any command fails
+# Exit when any command fails
 set -e
 
 fasta=$1
 output=$2
 step=${3:-alphafold}
 max_template_date=$(date +"%Y-%m-%d")
+# Allow unified memory usage and pooling of memory for multiple GPUs.
+export TF_FORCE_UNIFIED_MEMORY=${TF_FORCE_UNIFIED_MEMORY:-1}
+export XLA_PYTHON_CLIENT_MEM_FRACTION=${XLA_PYTHON_CLIENT_MEM_FRACTION:-4.0}
+
 
 echo -e "\n\nRun AlphaFold with step ${step} on fasta ${fasta}\n\n"
 
-# load required modules
+
+# Load required modules
 if [[ -n "$CC_CLUSTER" ]]
 then
   module purge
@@ -22,11 +27,9 @@ fi
 data_dir="$ALPHAFOLD_DATADIR"
 pdb_mmcif_dir="$ALPHAFOLD_PDB_MMCIF"
 
-### Check values of some environment variables
+# Check values of some variables
 echo SLURM_JOB_ID="$SLURM_JOB_ID"
 echo SLURM_JOB_GPUS="$SLURM_JOB_GPUS"
-
-### Check values of variables
 echo "output=${output}"
 echo "max_template_date=${max_template_date}"
 echo "data_dir=${data_dir}"

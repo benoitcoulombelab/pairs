@@ -26,6 +26,7 @@ then
 fi
 data_dir="$ALPHAFOLD_DATADIR"
 pdb_mmcif_dir="$ALPHAFOLD_PDB_MMCIF"
+pdb_seqres_dir="$ALPHAFOLD_PDB_SEQRES"
 
 # Check values of some variables
 echo SLURM_JOB_ID="$SLURM_JOB_ID"
@@ -71,7 +72,7 @@ run_alphafold.py \
     --mgnify_database_path="${data_dir}/mgnify/mgy_clusters_2022_05.fa" \
     --template_mmcif_dir="${pdb_mmcif_dir}/mmcif_files" \
     --obsolete_pdbs_path="${pdb_mmcif_dir}/obsolete.dat" \
-    --pdb_seqres_database_path="${data_dir}/pdb_seqres/pdb_seqres.txt" \
+    --pdb_seqres_database_path="${pdb_seqres_dir}/pdb_seqres.txt" \
     --uniprot_database_path="${data_dir}/uniprot/uniprot.fasta" \
     --uniref90_database_path="${data_dir}/uniref90/uniref90.fasta" \
     --hhblits_binary_path="${EBROOTHHMINSUITE}/bin/hhblits" \

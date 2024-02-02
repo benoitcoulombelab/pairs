@@ -246,9 +246,9 @@ def test_multi_interaction_score_statistics(testdir, mock_testclass):
     ranked0_files = [os.path.join(directory, "ranked_0.pdb") for directory in directories]
     [testdir.mkdir(directory) for directory in directories]
     [open(f, 'w').close() for f in ranked0_files]
-    as1 = MultiInteractionScore.AlphafoldStatistics(directories[0], 8.2, 0.8, 0.7, 7.3, 1.1)
-    as2 = MultiInteractionScore.AlphafoldStatistics(directories[1], 6.5, 0.5, 0.45, 3.5, 2.3)
-    as3 = MultiInteractionScore.AlphafoldStatistics(directories[2], 10.3, 0.3, 0.2, 0.9, 3.4)
+    as1 = MultiInteractionScore.AlphafoldStatistics(directories[0], 8.2, 0.8)
+    as2 = MultiInteractionScore.AlphafoldStatistics(directories[1], 6.5, 0.5)
+    as3 = MultiInteractionScore.AlphafoldStatistics(directories[2], 10.3, 0.31)
     MultiInteractionScore.alphafold_statistics = MagicMock(side_effect=[as1, as2, as3])
     output_file = "output.txt"
     with open(output_file, 'w') as output_out:
@@ -260,11 +260,10 @@ def test_multi_interaction_score_statistics(testdir, mock_testclass):
     assert os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Bait\tTarget\t" \
-                                       "Ranked_0 score\tRanked_0 confidence\tAverage confidence\t" \
-                                       "Unrelaxed average score\t Unrelaxed score standard deviation\n"
-        assert output_in.readline() == "POLR2A\tPOLR2B\t8.2\t0.8\t0.7\t7.3\t1.1\n"
-        assert output_in.readline() == "POLR2C\tPOLR2J\t6.5\t0.5\t0.45\t3.5\t2.3\n"
-        assert output_in.readline() == "POLR2D\tPOLR2G\t10.3\t0.3\t0.2\t0.9\t3.4\n"
+                                       "PAIRS score\tConfidence\tScore * Confidence\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t8.2\t0.8\t6.56\n"
+        assert output_in.readline() == "POLR2C\tPOLR2J\t6.5\t0.5\t3.25\n"
+        assert output_in.readline() == "POLR2D\tPOLR2G\t10.3\t0.31\t3.193\n"
 
 
 def test_multi_interaction_score_statistics_parameters(testdir, mock_testclass):
@@ -272,9 +271,9 @@ def test_multi_interaction_score_statistics_parameters(testdir, mock_testclass):
     ranked0_files = [os.path.join(directory, "ranked_0.pdb") for directory in directories]
     [testdir.mkdir(directory) for directory in directories]
     [open(f, 'w').close() for f in ranked0_files]
-    as1 = MultiInteractionScore.AlphafoldStatistics(directories[0], 8.2, 0.8, 0.7, 7.3, 1.1)
-    as2 = MultiInteractionScore.AlphafoldStatistics(directories[1], 6.5, 0.5, 0.45, 3.5, 2.3)
-    as3 = MultiInteractionScore.AlphafoldStatistics(directories[2], 10.3, 0.3, 0.2, 0.9, 3.4)
+    as1 = MultiInteractionScore.AlphafoldStatistics(directories[0], 8.2, 0.8)
+    as2 = MultiInteractionScore.AlphafoldStatistics(directories[1], 6.5, 0.5)
+    as3 = MultiInteractionScore.AlphafoldStatistics(directories[2], 10.3, 0.31)
     MultiInteractionScore.alphafold_statistics = MagicMock(side_effect=[as1, as2, as3])
     output_file = "output.txt"
     with open(output_file, 'w') as output_out:
@@ -288,11 +287,10 @@ def test_multi_interaction_score_statistics_parameters(testdir, mock_testclass):
     assert os.path.isfile(output_file)
     with open(output_file, 'r') as output_in:
         assert output_in.readline() == "Bait\tTarget\t" \
-                                       "Ranked_0 score\tRanked_0 confidence\tAverage confidence\t" \
-                                       "Unrelaxed average score\t Unrelaxed score standard deviation\n"
-        assert output_in.readline() == "POLR2A\tPOLR2B\t8.2\t0.8\t0.7\t7.3\t1.1\n"
-        assert output_in.readline() == "POLR2C\tPOLR2J\t6.5\t0.5\t0.45\t3.5\t2.3\n"
-        assert output_in.readline() == "POLR2D\tPOLR2G\t10.3\t0.3\t0.2\t0.9\t3.4\n"
+                                       "PAIRS score\tConfidence\tScore * Confidence\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t8.2\t0.8\t6.56\n"
+        assert output_in.readline() == "POLR2C\tPOLR2J\t6.5\t0.5\t3.25\n"
+        assert output_in.readline() == "POLR2D\tPOLR2G\t10.3\t0.31\t3.193\n"
 
 
 def test_alphafold_statistics(testdir, mock_testclass):
@@ -308,29 +306,14 @@ def test_alphafold_statistics(testdir, mock_testclass):
     alphafold_statistics = MultiInteractionScore.alphafold_statistics(directory)
     InteractionScore.interaction_score.assert_any_call(
         pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["A"], second_chains=["B"], partial=False)
-    InteractionScore.interaction_score.assert_any_call(
-        pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["B"], second_chains=["C"], partial=False)
     assert InteractionScore.interaction_score.call_args_list[0].kwargs["pdb"].name\
            == os.path.join(directory, "ranked_0.pdb")
     assert InteractionScore.interaction_score.call_args_list[0].kwargs["first_chains"] == ["A"]
     assert InteractionScore.interaction_score.call_args_list[0].kwargs["second_chains"] == ["B"]
-    unrelaxed_files_called = [InteractionScore.interaction_score.call_args_list[i].kwargs["pdb"].name
-                              for i in range(1, len(unrelaxed_files) + 1)]
-    for unrelaxed_file in unrelaxed_files:
-        assert os.path.join(directory, unrelaxed_file) in unrelaxed_files_called
-    for i in range(1, len(unrelaxed_files)+1):
-        assert InteractionScore.interaction_score.call_args_list[i].kwargs["first_chains"] == ["B"]
-        assert InteractionScore.interaction_score.call_args_list[i].kwargs["second_chains"] == ["C"]
     assert alphafold_statistics.directory == directory
     assert alphafold_statistics.ranked0_score == 8.2
     assert abs(alphafold_statistics.ranked0_confidence - 0.4154) < 0.0001, \
         f"{alphafold_statistics.ranked0_confidence}"
-    assert abs(alphafold_statistics.average_confidence - 0.3146) < 0.0001, \
-        f"{alphafold_statistics.average_confidence}"
-    assert abs(alphafold_statistics.unrelaxed_average_score - 5.0) < 0.01, \
-        f"{alphafold_statistics.unrelaxed_average_score}"
-    assert abs(alphafold_statistics.unrelaxed_score_standard_deviation - 2.43) < 0.01, \
-        f"{alphafold_statistics.unrelaxed_score_standard_deviation}"
 
 
 def test_alphafold_statistics_ranked0_only(testdir, mock_testclass):
@@ -345,9 +328,6 @@ def test_alphafold_statistics_ranked0_only(testdir, mock_testclass):
     assert alphafold_statistics.directory == directory
     assert alphafold_statistics.ranked0_score == 8.2
     assert alphafold_statistics.ranked0_confidence is None
-    assert alphafold_statistics.average_confidence is None
-    assert alphafold_statistics.unrelaxed_average_score is None
-    assert alphafold_statistics.unrelaxed_score_standard_deviation is None
 
 
 def test_parse_mapping(testdir, mock_testclass):

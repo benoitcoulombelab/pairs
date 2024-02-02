@@ -2,8 +2,6 @@ import argparse
 import os
 import re
 import sys
-import glob
-import statistics
 import json
 from typing import TextIO
 

@@ -56,7 +56,7 @@ def test_main_parameters(testdir, mock_testclass):
     MultiInteractionScore.multi_interaction_score = MagicMock()
     smokesignal.on = MagicMock()
     MultiInteractionScore.main(
-        ["-o", output_file, "-n", r"(\w+)____(\w+)", "-s", "-a", "A,B", "-b", "C,D", "-r", "9", "-w", "-c", "-p", "-P",
+        ["-o", output_file, "-n", r"(\w+)____(\w+)", "-s", "-A", "A,B", "-B", "C,D", "-r", "9", "-w", "-c", "-p", "-P",
          "-M", mapping_file, "-S", "2", "-C", "3"] + pdbs)
     MultiInteractionScore.multi_interaction_score.assert_called_once_with(
         input_files=pdbs, output_file=ANY, name=r"(\w+)____(\w+)",

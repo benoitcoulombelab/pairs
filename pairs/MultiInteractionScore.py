@@ -42,10 +42,6 @@ def main(argv: list[str] = None):
                              " (default: %(default)s)")
     parser.add_argument('-s', '--stats', action="store_true", default=False,
                         help="Compute confidence and unrelaxed score statistics")
-    parser.add_argument('-a', '--first', default="A",
-                        help="Chains of first protein separated by ','  (default: %(default)s)")
-    parser.add_argument('-b', '--second', default="B",
-                        help="Chains of second protein separated by ','  (default: %(default)s)")
     parser.add_argument('-r', '--radius', type=float, default=6.0,
                         help="Distance between atoms from different residues to assume interaction "
                              "(default: %(default)s)")
@@ -56,6 +52,10 @@ def main(argv: list[str] = None):
                         help="Score is the number of residues pairs at a distance less than radius parameter")
     parser.add_argument('-p', '--progress', action="store_true", default=False,
                         help="Show progress bar")
+    parser.add_argument('-A', '--first', default="A",
+                        help="Chains of first protein separated by ','  (default: %(default)s)")
+    parser.add_argument('-B', '--second', default="B",
+                        help="Chains of second protein separated by ','  (default: %(default)s)")
     parser.add_argument('-P', '--partial', action="store_true", default=False,
                         help="Do not warn if all chains in PDB are not used for computing score")
     parser.add_argument('-M', '--mapping', type=argparse.FileType('r'),

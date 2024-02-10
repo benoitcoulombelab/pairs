@@ -16,6 +16,10 @@ then
   module load nextflow/22.10.6
   module load pairs/1.0
 fi
+if [[ "beluga" == "$CC_CLUSTER" ]]
+then
+  ulimit -v 40000000
+fi
 
 export NXF_OPTS="-Xms500M -Xmx8000M"
 

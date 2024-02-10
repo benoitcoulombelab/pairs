@@ -9,6 +9,7 @@ log.info """\
          fasta   : ${params.fasta}
          step    : ${params.step}
          outdir  : ${params.outdir}
+         account : ${params.account}
          """
         .stripIndent()
 

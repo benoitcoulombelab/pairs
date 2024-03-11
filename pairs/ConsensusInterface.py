@@ -112,7 +112,7 @@ def consensus_interface(residue_pair_files: TextIO, output_file: TextIO, name: s
     for residue_pairs_file in residue_pair_files:
         re_match = re.search(name, residue_pairs_file.name)
         if not re_match:
-            raise AssertionError(f"Expression {name} cannot be found in filename {residue_pairs_file}")
+            raise AssertionError(f"Expression {name} cannot be found in filename {residue_pairs_file.name}")
         bait, target = re_match.group(1, 2)
         residue_pairs[(bait, target)] = parse_residue_pairs(residue_pairs_file)
 

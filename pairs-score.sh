@@ -13,6 +13,7 @@ set -e
 if [ -n "$CC_CLUSTER" ]
 then
   module -q purge
+  module -q load StdEnv/2020
   module -q load pairs/1.0
 fi
 

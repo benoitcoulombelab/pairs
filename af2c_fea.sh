@@ -6,7 +6,9 @@ set -e
 script_dir=$(dirname $(readlink -f "$0"))
 fasta=$1
 output=$2
-max_template_date=$(date +"%Y-%m-%d")
+db_preset=${3:-uniprot}
+feature_mode=${4:-monomer+organism+fullpdb}
+max_template_date=${5:-$(date +"%Y-%m-%d")}
 
 echo -e "\n\nRun AF2Complex feature generation on fasta ${fasta}\n\n"
 
@@ -23,14 +25,13 @@ fi
 data_dir="$ALPHAFOLD_DATADIR"
 pdb_mmcif_dir="$ALPHAFOLD_PDB_MMCIF"
 
-db_preset="reduced_dbs"
-feature_mode="monomer+species"
-
 
 # Check values of some variables
 echo SLURM_JOB_ID="$SLURM_JOB_ID"
 echo SLURM_JOB_GPUS="$SLURM_JOB_GPUS"
 echo "output=${output}"
+echo "db_preset=${db_preset}"
+echo "feature_mode=${feature_mode}"
 echo "max_template_date=${max_template_date}"
 echo "data_dir=${data_dir}"
 
@@ -54,8 +55,8 @@ mkdir -p "${output}"
 echo "Start AF2Complex feature generation using run_af2c_fea.py"
 python "${script_dir}/af2complex/src/run_af2c_fea.py" \
     --fasta_paths="$fasta" \
-    --db_preset=$db_preset \
-    --feature_mode=$feature_mode \
+    --db_preset="$db_preset" \
+    --feature_mode="$feature_mode" \
     --data_dir="$data_dir" \
     --output_dir="$output" \
     --max_template_date="$max_template_date" \
@@ -69,5 +70,7 @@ python "${script_dir}/af2complex/src/run_af2c_fea.py" \
     --hhblits_binary_path="${EBROOTHHMINSUITE}/bin/hhblits" \
     --hhsearch_binary_path="${EBROOTHHMINSUITE}/bin/hhsearch" \
     --jackhmmer_binary_path="${EBROOTHMMER}/bin/jackhmmer" \
+    --hmmsearch_binary_path="${EBROOTHMMER}/bin/hmmsearch" \
     --hmmbuild_binary_path="${EBROOTHMMER}/bin/hmmbuild" \
-    --kalign_binary_path="${EBROOTKALIGN}/bin/kalign"
+    --kalign_binary_path="${EBROOTKALIGN}/bin/kalign" \
+    --use_precomputed_msas=True

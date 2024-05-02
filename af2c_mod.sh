@@ -8,9 +8,9 @@ script_dir=$(dirname $(readlink -f "$0"))
 targets=$1
 features=$2
 output=$3
-preset=$4
-model=$5
-model_preset=$6
+preset=${4:-super}
+model=${5:-model_1_multimer_v3,model_2_multimer_v3,model_3_multimer_v3,model_4_multimer_v3,model_5_multimer_v3}
+model_preset=${6:-multimer_np}
 # Allow unified memory usage and pooling of memory for multiple GPUs.
 export TF_FORCE_UNIFIED_MEMORY=${TF_FORCE_UNIFIED_MEMORY:-1}
 export XLA_PYTHON_CLIENT_MEM_FRACTION=${XLA_PYTHON_CLIENT_MEM_FRACTION:-4.0}

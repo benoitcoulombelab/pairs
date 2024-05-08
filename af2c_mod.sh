@@ -4,7 +4,6 @@
 set -e
 
 
-script_dir=$(dirname $(readlink -f "$0"))
 targets=$1
 features=$2
 output=$3
@@ -27,6 +26,7 @@ then
   module load gcc/9.3.0 openmpi/4.0.3 cuda/11.4 cudnn/8.2.0 kalign/2.03 hmmer/3.2.1 openmm-alphafold/7.5.1 \
               hh-suite/3.3.0 python/3.8
   module load alphafold/2.3.2
+  module load af2complex/1.4.1-ca50922
 fi
 data_dir="$ALPHAFOLD_DATADIR"
 
@@ -50,17 +50,18 @@ then
 
   # Install alphafold and its dependencies
   pip install --no-index --upgrade pip
+  pip install --no-index --requirement "${AF2COMPLEX}/af2complex-requirements.txt"
   pip install --no-index --requirement "${ALPHAFOLD}/alphafold-requirements.txt"
-  pip install --no-index networkx==2.5.1
   pushd "${venv}/bin"
   git apply "${ALPHAFOLD}/alphafold-${ALPHAFOLD_VERSION}.patch"
   popd
+  rsync -a --exclude=venv "${AF2COMPLEX}"/* "${SLURM_TMPDIR}"
 fi
 
 mkdir -p "${output}"
 
 echo "Start AF2Complex structure prediction using run_af2c_mod.py"
-python -u "${script_dir}/af2complex/src/run_af2c_mod.py" \
+python -u "${SLURM_TMPDIR}/src/run_af2c_mod.py" \
   --target_lst_path="$targets" \
   --data_dir="$data_dir" \
   --output_dir="$output" \

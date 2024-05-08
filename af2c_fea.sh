@@ -3,7 +3,6 @@
 # Exit when any command fails
 set -e
 
-script_dir=$(dirname $(readlink -f "$0"))
 fasta=$1
 output=$2
 db_preset=${3:-uniprot}
@@ -21,6 +20,7 @@ then
   module load gcc/9.3.0 openmpi/4.0.3 cuda/11.4 cudnn/8.2.0 kalign/2.03 hmmer/3.2.1 openmm-alphafold/7.5.1 \
               hh-suite/3.3.0 python/3.8
   module load alphafold/2.3.2
+  module load af2complex/1.4.1-ca50922
 fi
 data_dir="$ALPHAFOLD_DATADIR"
 pdb_mmcif_dir="$ALPHAFOLD_PDB_MMCIF"
@@ -45,16 +45,18 @@ then
 
   # Install alphafold and its dependencies
   pip install --no-index --upgrade pip
+  pip install --no-index --requirement "${AF2COMPLEX}/af2complex-requirements.txt"
   pip install --no-index --requirement "${ALPHAFOLD}/alphafold-requirements.txt"
   pushd "${venv}/bin"
   git apply "${ALPHAFOLD}/alphafold-${ALPHAFOLD_VERSION}.patch"
   popd
+  rsync -a --exclude=venv "${AF2COMPLEX}"/* "${SLURM_TMPDIR}"
 fi
 
 mkdir -p "${output}"
 
 echo "Start AF2Complex feature generation using run_af2c_fea.py"
-python "${script_dir}/af2complex/src/run_af2c_fea.py" \
+python "${SLURM_TMPDIR}/src/run_af2c_fea.py" \
     --fasta_paths="$fasta" \
     --db_preset="$db_preset" \
     --feature_mode="$feature_mode" \

@@ -21,6 +21,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
+            "af2complex-score = pairs.Af2complexScore:main",
             "consensus-interface = pairs.ConsensusInterface:main",
             "delete-fasta = pairs.DeleteFasta:main",
             "fasta-id = pairs.FastaId:main",

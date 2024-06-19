@@ -26,7 +26,7 @@ def test_main(testdir, mock_testclass):
     Af2complexScore.main([])
     Af2complexScore.multi_interaction_score.assert_called_once_with(
         input_dir="", output_file=ANY, name=r"([\w-]+)__([\w-]+)",
-        metric="interface", progress=False, recycled=False,
+        metrics=["interface"], progress=False, recycled=False,
         mapping_file=None, source_column=0, converted_column=1)
     output_file = Af2complexScore.multi_interaction_score.call_args.kwargs["output_file"]
     assert isinstance(output_file, TextIOWrapper)
@@ -35,18 +35,18 @@ def test_main(testdir, mock_testclass):
 
 def test_main_parameters(testdir, mock_testclass):
     output = "output.txt"
-    metric = "pitms"
+    metrics = ["pitms", "plddts"]
     name = r"(\w+)_(\w+)"
     mapping = "mapping.txt"
     Path(mapping).touch()
     source_column = 2
     converted_column = 3
     Af2complexScore.multi_interaction_score = MagicMock()
-    Af2complexScore.main(["-i", str(testdir), "-o", output, "-m", metric, "-n", name, "-p", "-R",
+    Af2complexScore.main(["-i", str(testdir), "-o", output, "-m", metrics[0], metrics[1], "-n", name, "-p", "-R",
                           "-M", mapping, "-S", str(source_column + 1), "-C", str(converted_column + 1)])
     Af2complexScore.multi_interaction_score.assert_called_once_with(
         input_dir=str(testdir), output_file=ANY, name=name,
-        metric=metric, progress=True, recycled=True,
+        metrics=metrics, progress=True, recycled=True,
         mapping_file=ANY, source_column=2, converted_column=3)
     output_file = Af2complexScore.multi_interaction_score.call_args.kwargs["output_file"]
     mapping_file = Af2complexScore.multi_interaction_score.call_args.kwargs["mapping_file"]
@@ -60,20 +60,20 @@ def test_main_parameters(testdir, mock_testclass):
 
 def test_main_long_parameters(testdir, mock_testclass):
     output = "output.txt"
-    metric = "pitms"
+    metrics = ["pitms", "plddts"]
     name = r"(\w+)_(\w+)"
     mapping = "mapping.txt"
     Path(mapping).touch()
     source_column = 2
     converted_column = 3
     Af2complexScore.multi_interaction_score = MagicMock()
-    Af2complexScore.main(["--input", str(testdir), "--output", output, "--metric", metric, "--name", name,
-                          "--progress", "--recycled",
+    Af2complexScore.main(["--input", str(testdir), "--output", output, "--metric", metrics[0], metrics[1],
+                          "--name", name, "--progress", "--recycled",
                           "--mapping", mapping, "--source_column", str(source_column + 1),
                           "--converted_column", str(converted_column + 1)])
     Af2complexScore.multi_interaction_score.assert_called_once_with(
         input_dir=str(testdir), output_file=ANY, name=name,
-        metric=metric, progress=True, recycled=True,
+        metrics=metrics, progress=True, recycled=True,
         mapping_file=ANY, source_column=2, converted_column=3)
     output_file = Af2complexScore.multi_interaction_score.call_args.kwargs["output_file"]
     mapping_file = Af2complexScore.multi_interaction_score.call_args.kwargs["mapping_file"]
@@ -103,9 +103,9 @@ def test_multi_interaction_score(testdir, mock_testclass):
     Af2complexScore.parse_rankings.assert_any_call(ranking_file_2, "interface", False)
     Af2complexScore.parse_mapping.assert_not_called()
     with open(output, "r") as output_in:
-        assert output_in.readline() == "Bait\tTarget\tInterface score\tTM score\n"
-        assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\t0.8952\n"
-        assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\t0.8985\n"
+        assert output_in.readline() == "Bait\tTarget\tInterface score\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\n"
+        assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\n"
 
 
 def test_multi_interaction_score_parameters(testdir, mock_testclass):
@@ -119,6 +119,7 @@ def test_multi_interaction_score_parameters(testdir, mock_testclass):
     ranking_1 = Af2complexScore.Ranking("model_5_multimer_v3_p1", 0.7772, 180, 210, 0.7059, 89.2, 0.8952)
     ranking_2 = Af2complexScore.Ranking("model_4_multimer_v3_p1", 0.7601, 86, 93, 0.783, 90.04, 0.8985)
     output = "output.txt"
+    metrics = ["ptms", "interface", "plddts", "pitms"]
     mappings_file = "mappings.txt"
     Path(mappings_file).touch()
     mappings = {"RPB-1": "POLR2A", "RPB-2": "POLR2B", "RPB-3": "POLR2C"}
@@ -126,17 +127,17 @@ def test_multi_interaction_score_parameters(testdir, mock_testclass):
     Af2complexScore.parse_mapping = MagicMock(return_value=mappings)
     with open(output, "w") as output_out, open(mappings_file, "r") as mappings_in:
         Af2complexScore.multi_interaction_score("rankings", output_out, r"([\w-]+)___([\w-]+)",
-                                                "pitms", False, True, mappings_in, 2, 3)
-    Af2complexScore.parse_rankings.assert_any_call(ranking_file_1, "pitms", True)
-    Af2complexScore.parse_rankings.assert_any_call(ranking_file_2, "pitms", True)
+                                                metrics, False, True, mappings_in, 2, 3)
+    Af2complexScore.parse_rankings.assert_any_call(ranking_file_1, "ptms", True)
+    Af2complexScore.parse_rankings.assert_any_call(ranking_file_2, "ptms", True)
     Af2complexScore.parse_mapping.assert_called_once_with(ANY, 2, 3)
     mappings_file_arg = Af2complexScore.parse_mapping.call_args.args[0]
     assert mappings_file_arg.name == mappings_file
     assert mappings_file_arg.mode == "r"
     with open(output, "r") as output_in:
-        assert output_in.readline() == "Bait\tTarget\tInterface score\tTM score\n"
-        assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\t0.8952\n"
-        assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\t0.8985\n"
+        assert output_in.readline() == "Bait\tTarget\tpTM\tInterface score\tpLDDT\tTM score (piTM)\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t0.8952\t0.7772\t89.2\t0.7059\n"
+        assert output_in.readline() == "POLR2A\tPOLR2C\t0.8985\t0.7601\t90.04\t0.783\n"
 
 
 def test_multi_interaction_score_progress(testdir, mock_testclass):
@@ -159,9 +160,9 @@ def test_multi_interaction_score_progress(testdir, mock_testclass):
     Af2complexScore.parse_rankings.assert_any_call(ranking_file_2, "interface", False)
     Af2complexScore.parse_mapping.assert_not_called()
     with open(output, "r") as output_in:
-        assert output_in.readline() == "Bait\tTarget\tInterface score\tTM score\n"
-        assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\t0.8952\n"
-        assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\t0.8985\n"
+        assert output_in.readline() == "Bait\tTarget\tInterface score\n"
+        assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\n"
+        assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\n"
 
 
 def test_parse_rankings(testdir, mock_testclass):

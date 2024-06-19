@@ -86,6 +86,10 @@ def multi_interaction_score(input_dir: str = "", output_file: TextIO = sys.stdou
     :param source_column: column index of source names in mapping file
     :param converted_column: column index of converted names in mapping file
     """
+    if len(metrics) == 0:
+        raise AssertionError("metrics must have at least one value")
+    if len([metric for metric in metrics if metric not in RANKING_METRICS]) > 0:
+        raise AssertionError(f"metrics values must all be present in {RANKING_METRICS}")
     ranking_files = sorted(glob.glob("**/ranking_all_*.json", root_dir=input_dir, recursive=True))
     ranking_files = [os.path.join(input_dir, ranking_file) for ranking_file in ranking_files]
     mappings = {}

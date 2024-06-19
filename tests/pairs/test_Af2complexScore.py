@@ -1,5 +1,4 @@
-import os.path
-import sys
+import argparse
 import shutil
 from io import TextIOWrapper
 from pathlib import Path
@@ -85,6 +84,13 @@ def test_main_long_parameters(testdir, mock_testclass):
     assert mapping_file.mode == "r"
 
 
+def test_main_no_metrics(testdir, mock_testclass):
+    Af2complexScore.multi_interaction_score = MagicMock()
+    with pytest.raises(SystemExit):
+        Af2complexScore.main(["-m"])
+    Af2complexScore.multi_interaction_score.assert_not_called()
+
+
 def test_multi_interaction_score(testdir, mock_testclass):
     ranking_file_1 = "POLR2A__POLR2B/ranking_all_240525_625637.json"
     ranking_file_2 = "POLR2A__POLR2C/ranking_all_240603_519798.json"
@@ -163,6 +169,44 @@ def test_multi_interaction_score_progress(testdir, mock_testclass):
         assert output_in.readline() == "Bait\tTarget\tInterface score\n"
         assert output_in.readline() == "POLR2A\tPOLR2B\t0.7772\n"
         assert output_in.readline() == "POLR2A\tPOLR2C\t0.7601\n"
+
+
+def test_multi_interaction_score_empty_metrics(testdir, mock_testclass):
+    ranking_file_1 = "POLR2A__POLR2B/ranking_all_240525_625637.json"
+    ranking_file_2 = "POLR2A__POLR2C/ranking_all_240603_519798.json"
+    Path(ranking_file_1).parent.mkdir()
+    Path(ranking_file_2).parent.mkdir()
+    shutil.copy(Path(__file__).parent.joinpath("ranking_all_240525_625637.json"), ranking_file_1)
+    shutil.copy(Path(__file__).parent.joinpath("ranking_all_240603_519798.json"), ranking_file_2)
+    ranking_1 = Af2complexScore.Ranking("model_5_multimer_v3_p1", 0.7772, 180, 210, 0.7059, 89.2, 0.8952)
+    ranking_2 = Af2complexScore.Ranking("model_4_multimer_v3_p1", 0.7601, 86, 93, 0.783, 90.04, 0.8985)
+    output = "output.txt"
+    Af2complexScore.parse_rankings = MagicMock(side_effect=[ranking_1, ranking_2])
+    Af2complexScore.parse_mapping = MagicMock()
+    with pytest.raises(AssertionError):
+        with open(output, "w") as output_out:
+            Af2complexScore.multi_interaction_score(output_file=output_out, metrics=[])
+    Af2complexScore.parse_rankings.assert_not_called()
+    Af2complexScore.parse_mapping.assert_not_called()
+
+
+def test_multi_interaction_score_invalid_metrics(testdir, mock_testclass):
+    ranking_file_1 = "POLR2A__POLR2B/ranking_all_240525_625637.json"
+    ranking_file_2 = "POLR2A__POLR2C/ranking_all_240603_519798.json"
+    Path(ranking_file_1).parent.mkdir()
+    Path(ranking_file_2).parent.mkdir()
+    shutil.copy(Path(__file__).parent.joinpath("ranking_all_240525_625637.json"), ranking_file_1)
+    shutil.copy(Path(__file__).parent.joinpath("ranking_all_240603_519798.json"), ranking_file_2)
+    ranking_1 = Af2complexScore.Ranking("model_5_multimer_v3_p1", 0.7772, 180, 210, 0.7059, 89.2, 0.8952)
+    ranking_2 = Af2complexScore.Ranking("model_4_multimer_v3_p1", 0.7601, 86, 93, 0.783, 90.04, 0.8985)
+    output = "output.txt"
+    Af2complexScore.parse_rankings = MagicMock(side_effect=[ranking_1, ranking_2])
+    Af2complexScore.parse_mapping = MagicMock()
+    with pytest.raises(AssertionError):
+        with open(output, "w") as output_out:
+            Af2complexScore.multi_interaction_score(output_file=output_out, metrics=["test"])
+    Af2complexScore.parse_rankings.assert_not_called()
+    Af2complexScore.parse_mapping.assert_not_called()
 
 
 def test_parse_rankings(testdir, mock_testclass):

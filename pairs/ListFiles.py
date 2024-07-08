@@ -1,20 +1,20 @@
 import argparse
-import os
-import re
-import sys
 import glob
 import json
+import os
+import sys
 from typing import TextIO
 
 import tqdm
 
-
-RELAXATION_FILENAMES = "relaxed_model_*.pdb"
-RELAXATION_FILENAME_TO_MODEL_REGEX = r"relaxed_(model_[\w]+)\.pdb"
-RELAXATION_JSON = "relax_metrics.json"
-ALPHAFOLD_FILES_TO_ARCHIVE = ["ranked_0.pdb", "ranking_debug.json", "relax_metrics.json", "timings.json"]
-ALPHAFOLD_FILES_TO_ARCHIVE.extend([f"unrelaxed_model_{i}_multimer_v3_pred_{j}.pdb"
-                                   for i in range(1, 6) for j in range(0, 5)])
+RANKING_METRICS = ["interface", "pitms", "plddts", "ptms"]
+RANKING_METRICS_JSON = {
+    "interface": "interface score",
+    "pitms": "pitms",
+    "plddts": "plddts",
+    "ptms": "ptms"
+}
+RANKING_FILES = ["ranking_debug.json", "ranking_all_*.json", "ranking_model_*.json"]
 
 
 def dir_path(string: str):
@@ -33,70 +33,96 @@ def main(argv: list[str] = None):
                         help="Output file  (default: standard output)")
     parser.add_argument('-p', '--progress', action="store_true", default=False,
                         help="Show progress bar")
+    parser.add_argument('-m', '--metric', choices=RANKING_METRICS, default=RANKING_METRICS[0],
+                        help="Metric to use to choose best model - only useful for AF2Complex runs "
+                             "as the metric is always 'plddts' for AlphaFold runs  (default: %(default)s)")
+    parser.add_argument('--all-pdb', action="store_true", default=False,
+                        help="Archive all PDB files")
+    parser.add_argument('--pkl', action=argparse.BooleanOptionalAction, default=True,
+                        help="Archive PKL files of the best model  (default: %(default)s)")
+    parser.add_argument('--all-pkl', action="store_true", default=False,
+                        help="Archive all models' PKL files")
 
     args = parser.parse_args(argv)
 
-    list_files(input_dir=args.input, output_file=args.output, progress=args.progress)
+    list_files(input_dir=args.input, output_file=args.output, progress=args.progress, metric=args.metric,
+               all_pdb=args.all_pdb, best_pkl=args.pkl, all_pkl=args.all_pkl)
 
 
-def list_files(input_dir: str, output_file: TextIO, progress: bool = False):
+def list_files(input_dir: str, output_file: TextIO, progress: bool = False,
+               metric: str = RANKING_METRICS[0],
+               all_pdb: bool = False,
+               best_pkl: bool = True, all_pkl: bool = False):
     """
     List files from AlphaFold's output that need to be archived.
 
     :param input_dir: directory containing one or many AlphaFold's output directories
     :param output_file: output file
     :param progress: show progress bar
+    :param metric: metric used to choose best model - only used for AF2Complex rankings
+    :param all_pdb: archive all PDB files
+    :param best_pkl: archive PKL files of the best model
+    :param all_pkl: archive all models' PKL files
     """
-    ranked_0_files = glob.glob(os.path.join(input_dir, "**/ranked_0.pdb"))
-    for ranked_0_file in (tqdm.tqdm(ranked_0_files) if progress else ranked_0_files):
-        files = alphafold_archive_files(os.path.dirname(ranked_0_file))
-        for file in files:
+    ranking_files = []
+    [ranking_files.extend(glob.glob(os.path.join(input_dir, f"**/{ranking_file}"))) for ranking_file in RANKING_FILES]
+    directories = [os.path.dirname(ranking_file) for ranking_file in ranking_files]
+    directories = list(set(directories))
+    directories.sort()
+    for directory in (tqdm.tqdm(directories) if progress else directories):
+        ranking_files = []
+        [ranking_files.extend(glob.glob(os.path.join(directory, ranking_file))) for ranking_file in RANKING_FILES]
+        ranking_files.sort()
+        best_model = get_best_model(ranking_files, metric)
+        files_to_archive = glob.glob(os.path.join(directory, "*.json"))
+        if all_pdb:
+            files_to_archive.extend(glob.glob(os.path.join(directory, "*.pdb")))
+        else:
+            files_to_archive.extend(glob.glob(os.path.join(directory, f"*{best_model}*.pdb")))
+            files_to_archive.extend(glob.glob(os.path.join(directory, f"ranked_0.pdb")))
+        if all_pkl:
+            files_to_archive.extend(glob.glob(os.path.join(directory, "*model_*.pkl")))
+        elif best_pkl:
+            files_to_archive.extend(glob.glob(os.path.join(directory, f"*{best_model}*.pkl")))
+        files_to_archive = list(set(files_to_archive))
+        files_to_archive.sort()
+        for file in files_to_archive:
             output_file.write(file)
             output_file.write("\n")
 
 
-def alphafold_archive_files(input_dir: str) -> list[str]:
+def get_best_model(ranking_files: [str], metric: str = RANKING_METRICS[0]) -> str:
     """
-    List files from AlphaFold's output directory that need to be archived.
+    Returns best model found by AlphaFold or AF2Complex in ranking file.
 
-    :param input_dir: AlphaFold's output directory
-    :return: all files to be archived
+    :param ranking_files: ranking files in JSON format - usually named 'ranking_debug.json',
+                          'ranking_all_*.json' or 'ranking_model_*.json'
+    :param metric: metric used to choose best model - only used for AF2Complex rankings
+    :return: best model found by AlphaFold or AF2Complex in ranking file
     """
-    files_to_archive = []
-    for file in ALPHAFOLD_FILES_TO_ARCHIVE:
-        file = os.path.join(input_dir, file)
-        if os.path.isfile(file):
-            files_to_archive.append(file)
-        else:
-            print(f"File {os.path.basename(file)} is missing from directory {input_dir}", file=sys.stderr)
-    relaxation_models_to_archive = relaxation_models(input_dir)
-    for relaxation_model in relaxation_models_to_archive:
-        for file in [f"relaxed_{relaxation_model}.pdb", f"result_{relaxation_model}.pkl"]:
-            file = os.path.join(input_dir, file)
-            if os.path.isfile(file):
-                files_to_archive.append(file)
-            else:
-                print(f"File {os.path.basename(file)} is missing from directory {input_dir}", file=sys.stderr)
-    return files_to_archive
-
-
-def relaxation_models(input_dir: str) -> list[str]:
-    """
-    Returns all models that were relaxed.
-    When possible, models are obtained using relax_metrics.json file.
-    Otherwise, models are obtained based on filename.
-
-    :param input_dir: AlphaFold's output directory
-    :return: all models that were relaxed
-    """
-    relaxation_json = os.path.join(input_dir, RELAXATION_JSON)
-    if os.path.isfile(relaxation_json):
-        with open(relaxation_json, 'r') as relaxation_in:
-            relaxation = json.load(relaxation_in)
-        return relaxation.keys()
-    relaxation_files = glob.glob(os.path.join(input_dir, RELAXATION_FILENAMES))
-    return [re.match(RELAXATION_FILENAME_TO_MODEL_REGEX, os.path.basename(relaxation_file))[1]
-            for relaxation_file in relaxation_files]
+    if metric not in RANKING_METRICS_JSON:
+        raise AssertionError(f"metric {metric} not found in RANKING_METRICS ({RANKING_METRICS.keys()})")
+    ranking_json = RANKING_METRICS_JSON[metric]
+    rankings = []
+    for ranking_file in ranking_files:
+        with open(ranking_file, 'r') as ranking_in:
+            rankings.append(json.load(ranking_in))
+    if len(rankings) == 1 and ranking_json not in rankings[0]:
+        # Assume AlphaFold ranking
+        return rankings[0]["order"][0]
+    else:
+        # Assume AF2Complex ranking
+        best_score = -1.0
+        best_model = None
+        for ranking in rankings:
+            all_keys = list(ranking[ranking_json].keys())
+            keys = [key for key in all_keys if "_recycled_" not in key]
+            score = max([ranking[ranking_json][key] for key in keys])
+            model = all_keys[list(ranking[ranking_json].values()).index(score)]
+            if score > best_score:
+                best_score = score
+                best_model = model
+        return best_model
 
 
 if __name__ == '__main__':

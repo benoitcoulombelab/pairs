@@ -39,7 +39,7 @@ def main(argv: list[str] = None):
     parser.add_argument('--all-pdb', action="store_true", default=False,
                         help="Archive all PDB files")
     parser.add_argument('--pkl', action=argparse.BooleanOptionalAction, default=True,
-                        help="Archive PKL files of the best model  (default: %(default)s)")
+                        help="Archive PKL files of the best model")
     parser.add_argument('--all-pkl', action="store_true", default=False,
                         help="Archive all models' PKL files")
 
@@ -117,11 +117,11 @@ def get_best_model(ranking_files: [str], metric: str = RANKING_METRICS[0]) -> st
         for ranking in rankings:
             all_keys = list(ranking[ranking_json].keys())
             keys = [key for key in all_keys if "_recycled_" not in key]
-            score = max([ranking[ranking_json][key] for key in keys])
-            model = all_keys[list(ranking[ranking_json].values()).index(score)]
-            if score > best_score:
-                best_score = score
-                best_model = model
+            for key in keys:
+                score = ranking[ranking_json][key]
+                if score > best_score:
+                    best_score = score
+                    best_model = key
         return best_model
 
 

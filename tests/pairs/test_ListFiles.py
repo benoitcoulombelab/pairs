@@ -747,3 +747,9 @@ def test_get_best_model_af2complex_per_model_ranking(testdir, mock_testclass):
                      Path(__file__).parent.joinpath(f"ranking_model_5_multimer_v3_p1_240624_536961.json")]
     best_model = ListFiles.get_best_model(ranking_files)
     assert best_model == "model_4_multimer_v3_p1_240624_214651"
+
+
+def test_get_best_model_af2complex_recycled_same_score(testdir, mock_testclass):
+    ranking_file = Path(__file__).parent.joinpath("ranking_all_240909_072299.json")
+    best_model = ListFiles.get_best_model([ranking_file])
+    assert best_model == "model_3_multimer_v3_p1_240909_072299"

@@ -1,161 +1,161 @@
 {
-    "chain_lengths": [
-        1390,
-        210,
-        150,
-        1133,
-        398,
-        708,
-        346,
-        133,
-        58,
-        67,
-        534,
-        316,
-        223,
-        127,
-        204,
-        148,
-        108
-    ],
-    "chains": {
-        "A": "RPC1_HUMAN_1",
-        "B": "RPAB1_HUMAN_1",
-        "C": "RPAB3_HUMAN_1",
-        "D": "RPC2_HUMAN_1",
-        "E": "RPC4_HUMAN_1",
-        "F": "RPC5_HUMAN_1",
-        "G": "RPAC1_HUMAN_1",
-        "H": "RPAC2_HUMAN_1",
-        "I": "RPAB4_HUMAN_1",
-        "J": "RPAB5_HUMAN_1",
-        "K": "RPC3_HUMAN_1",
-        "L": "RPC6_HUMAN_1",
-        "M": "RPC7_HUMAN_1",
-        "N": "RPAB2_HUMAN_1",
-        "O": "RPC8_HUMAN_1",
-        "P": "RPC9_HUMAN_1",
-        "Q": "RPC10_HUMAN_1"
-    },
-    "clusters": {
-        "model_1_multimer_v3_p1_240624_450814": {
-            "cluster_sizes": [
-                6,
-                1,
-                1,
-                1,
-                2,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1
-            ],
-            "clusters": [
-                [
-                    "RPC1_HUMAN_0",
-                    "RPC2_HUMAN_0",
-                    "RPC4_HUMAN_0",
-                    "RPC3_HUMAN_0",
-                    "RPC6_HUMAN_0",
-                    "RPC8_HUMAN_0"
-                ],
-                [
-                    "RPAB1_HUMAN_0"
-                ],
-                [
-                    "RPAB3_HUMAN_0"
-                ],
-                [
-                    "RPC5_HUMAN_0"
-                ],
-                [
-                    "RPC7_HUMAN_0",
-                    "RPAC1_HUMAN_0"
-                ],
-                [
-                    "RPAC2_HUMAN_0"
-                ],
-                [
-                    "RPAB4_HUMAN_0"
-                ],
-                [
-                    "RPAB5_HUMAN_0"
-                ],
-                [
-                    "RPAB2_HUMAN_0"
-                ],
-                [
-                    "RPC9_HUMAN_0"
-                ],
-                [
-                    "RPC10_HUMAN_0"
-                ]
-            ],
-            "num_clusters": 11
-        }
-    },
-    "interface score": {
-        "model_1_multimer_v3_p1_240624_450814": 0.1644,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.3026,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.2182,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.1796
-    },
-    "interfacial residue number": {
-        "model_1_multimer_v3_p1_240624_450814": 984,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 2906,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 1647,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 1075
-    },
-    "interficial contact number": {
-        "model_1_multimer_v3_p1_240624_450814": 3050,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 11161,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 5507,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 3184
-    },
-    "iptm+ptm": {
-        "model_1_multimer_v3_p1_240624_450814": 0.3927
-    },
-    "iterations": {
-        "model_1_multimer_v3_p1_240624_450814": 3
-    },
-    "model_preset": "multimer_np",
-    "msa_pairing": null,
-    "order": [
-        "model_1_multimer_v3_p1_240624_450814_recycled_00",
-        "model_1_multimer_v3_p1_240624_450814_recycled_02",
-        "model_1_multimer_v3_p1_240624_450814",
-        "model_1_multimer_v3_p1_240624_450814_recycled_01"
-    ],
-    "pitms": {
-        "model_1_multimer_v3_p1_240624_450814": 0.3315,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.3609,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.2953,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.3471
-    },
-    "plddts": {
-        "model_1_multimer_v3_p1_240624_450814": 36.72,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 31.62,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 34.82,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 35.93
-    },
-    "ptms": {
-        "model_1_multimer_v3_p1_240624_450814": 0.4469,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.4695,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.439,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.4494
-    },
-    "ranking_metric": "pTM",
-    "timings": {
-        "features": 6.69,
-        "predict_and_compile_model_1_multimer_v3_p1_240624_450814": 146422.5,
-        "process_features_model_1_multimer_v3_p1_240624_450814": 0.0
-    },
-    "tol_values": {
-        "model_1_multimer_v3_p1_240624_450814": 21.44,
-        "model_1_multimer_v3_p1_240624_450814_recycled_00": Infinity,
-        "model_1_multimer_v3_p1_240624_450814_recycled_01": 75.32,
-        "model_1_multimer_v3_p1_240624_450814_recycled_02": 26.56
+  "chain_lengths": [
+    1390,
+    210,
+    150,
+    1133,
+    398,
+    708,
+    346,
+    133,
+    58,
+    67,
+    534,
+    316,
+    223,
+    127,
+    204,
+    148,
+    108
+  ],
+  "chains": {
+    "A": "RPC1_HUMAN_1",
+    "B": "RPAB1_HUMAN_1",
+    "C": "RPAB3_HUMAN_1",
+    "D": "RPC2_HUMAN_1",
+    "E": "RPC4_HUMAN_1",
+    "F": "RPC5_HUMAN_1",
+    "G": "RPAC1_HUMAN_1",
+    "H": "RPAC2_HUMAN_1",
+    "I": "RPAB4_HUMAN_1",
+    "J": "RPAB5_HUMAN_1",
+    "K": "RPC3_HUMAN_1",
+    "L": "RPC6_HUMAN_1",
+    "M": "RPC7_HUMAN_1",
+    "N": "RPAB2_HUMAN_1",
+    "O": "RPC8_HUMAN_1",
+    "P": "RPC9_HUMAN_1",
+    "Q": "RPC10_HUMAN_1"
+  },
+  "clusters": {
+    "model_1_multimer_v3_p1_240624_450814": {
+      "cluster_sizes": [
+        6,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "clusters": [
+        [
+          "RPC1_HUMAN_0",
+          "RPC2_HUMAN_0",
+          "RPC4_HUMAN_0",
+          "RPC3_HUMAN_0",
+          "RPC6_HUMAN_0",
+          "RPC8_HUMAN_0"
+        ],
+        [
+          "RPAB1_HUMAN_0"
+        ],
+        [
+          "RPAB3_HUMAN_0"
+        ],
+        [
+          "RPC5_HUMAN_0"
+        ],
+        [
+          "RPC7_HUMAN_0",
+          "RPAC1_HUMAN_0"
+        ],
+        [
+          "RPAC2_HUMAN_0"
+        ],
+        [
+          "RPAB4_HUMAN_0"
+        ],
+        [
+          "RPAB5_HUMAN_0"
+        ],
+        [
+          "RPAB2_HUMAN_0"
+        ],
+        [
+          "RPC9_HUMAN_0"
+        ],
+        [
+          "RPC10_HUMAN_0"
+        ]
+      ],
+      "num_clusters": 11
     }
+  },
+  "interface score": {
+    "model_1_multimer_v3_p1_240624_450814": 0.1644,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.3026,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.2182,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.1796
+  },
+  "interfacial residue number": {
+    "model_1_multimer_v3_p1_240624_450814": 984,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 2906,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 1647,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 1075
+  },
+  "interficial contact number": {
+    "model_1_multimer_v3_p1_240624_450814": 3050,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 11161,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 5507,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 3184
+  },
+  "iptm+ptm": {
+    "model_1_multimer_v3_p1_240624_450814": 0.3927
+  },
+  "iterations": {
+    "model_1_multimer_v3_p1_240624_450814": 3
+  },
+  "model_preset": "multimer_np",
+  "msa_pairing": null,
+  "order": [
+    "model_1_multimer_v3_p1_240624_450814_recycled_00",
+    "model_1_multimer_v3_p1_240624_450814_recycled_02",
+    "model_1_multimer_v3_p1_240624_450814",
+    "model_1_multimer_v3_p1_240624_450814_recycled_01"
+  ],
+  "pitms": {
+    "model_1_multimer_v3_p1_240624_450814": 0.3315,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.3609,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.2953,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.3471
+  },
+  "plddts": {
+    "model_1_multimer_v3_p1_240624_450814": 36.72,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 31.62,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 34.82,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 35.93
+  },
+  "ptms": {
+    "model_1_multimer_v3_p1_240624_450814": 0.4469,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": 0.4695,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 0.439,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 0.4494
+  },
+  "ranking_metric": "pTM",
+  "timings": {
+    "features": 6.69,
+    "predict_and_compile_model_1_multimer_v3_p1_240624_450814": 146422.5,
+    "process_features_model_1_multimer_v3_p1_240624_450814": 0.0
+  },
+  "tol_values": {
+    "model_1_multimer_v3_p1_240624_450814": 21.44,
+    "model_1_multimer_v3_p1_240624_450814_recycled_00": Infinity,
+    "model_1_multimer_v3_p1_240624_450814_recycled_01": 75.32,
+    "model_1_multimer_v3_p1_240624_450814_recycled_02": 26.56
+  }
 }

@@ -28,6 +28,7 @@ setup(
         "fasta-pairs = pairs.FastaPairs:main",
         "id-convert = pairs.IdConvert:main",
         "interaction-score = pairs.InteractionScore:main",
+        "json-pairs = pairs.JsonPairs:main",
         "list-files = pairs.ListFiles:main",
         "multi-interaction-score = pairs.MultiInteractionScore:main",
         "pdb-fasta = pairs.PdbFasta:main",

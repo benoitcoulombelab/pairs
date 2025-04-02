@@ -26,8 +26,8 @@ def main(argv: list[str] = None):
   parser.add_argument('-t', '--targets', type=argparse.FileType('r'),
                       required=True,
                       help="FASTA file containing targets")
-  parser.add_argument('-s', '--seed', type=int, default=None,
-                      help="Seed to use for model inference.  (default: use random seed)")
+  parser.add_argument('-s', '--seed', type=int, nargs="*", default=None,
+                      help="Seed(s) to use for model inference.  (default: use random seed)")
   parser.add_argument('-u', '--unique', action='store_true',
                       help="Save only one JSON file per pair "
                            "- do not save POLR2B-POLR2A pair if POLR2A-POLR2B is also present.")
@@ -39,19 +39,20 @@ def main(argv: list[str] = None):
 
   args = parser.parse_args(argv)
 
-  json_pairs(baits=args.baits, targets=args.targets, seed=args.seed,
+  json_pairs(baits=args.baits, targets=args.targets, seeds=args.seed,
              unique=args.unique, skip_identity=args.identity,
              output=args.output)
 
 
-def json_pairs(baits: str, targets: str, seed: int = None, unique: bool = False,
+def json_pairs(baits: str, targets: str, seeds: [int] = None,
+    unique: bool = False,
     skip_identity: bool = False, output: str = ""):
   """
   Create JSON files, each one containing a protein pair, one protein from baits and one protein from targets file.
 
   :param baits: baits
   :param targets: targets
-  :param seed: seed to use for model inference
+  :param seeds: seeds to use for model inference
   :param unique: save only one JSON file per unique pair -
                  do not save POLR2B-POLR2A pair if POLR2A-POLR2B is also present
   :param skip_identity: don't save JSON file of a protein with itself -
@@ -78,8 +79,8 @@ def json_pairs(baits: str, targets: str, seed: int = None, unique: bool = False,
         "protein": {"id": target_id, "sequence": str(targets[target].seq)}}
       merge_id = f"{bait}__{target}"
       json_data = {"name": merge_id,
-                   "modelSeeds": seed if seed else random.randint(1,
-                                                                  2147483647),
+                   "modelSeeds": seeds if seeds else [random.randint(1,
+                                                                     2147483647)],
                    "dialect": "alphafold3", "version": 1,
                    "sequences": [bait_data, target_data]}
       json_data["sequences"][0] = bait_data

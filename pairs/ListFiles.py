@@ -14,7 +14,8 @@ RANKING_METRICS_JSON = {
   "plddts": "plddts",
   "ptms": "ptms"
 }
-RANKING_FILES = ["ranking_debug.json", "ranking_all_*.json",
+RANKING_FILES = ["*_summary_confidences.json", "ranking_debug.json",
+                 "ranking_all_*.json",
                  "ranking_model_*.json"]
 
 
@@ -117,7 +118,7 @@ def get_best_model(ranking_files: [str],
   """
   if metric not in RANKING_METRICS_JSON:
     raise AssertionError(
-        f"metric {metric} not found in RANKING_METRICS ({RANKING_METRICS.keys()})")
+        f"metric {metric} not found in RANKING_METRICS ({RANKING_METRICS})")
   ranking_json = RANKING_METRICS_JSON[metric]
   rankings = []
   for ranking_file in ranking_files:

@@ -32,6 +32,7 @@ setup(
         "json-pairs = pairs.JsonPairs:main",
         "list-files = pairs.ListFiles:main",
         "multi-interaction-score = pairs.MultiInteractionScore:main",
+        "pair-sizes = pairs.PairSizes:main",
         "pdb-fasta = pairs.PdbFasta:main",
         "random-sequences = pairs.RandomSequences:main",
         "score-matrix = pairs.ScoreMatrix:main",

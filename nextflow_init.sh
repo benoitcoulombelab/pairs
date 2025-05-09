@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# exit when any command fails
-set -e
-
 # load required modules
 if [[ -n "$CC_CLUSTER" ]]
 then

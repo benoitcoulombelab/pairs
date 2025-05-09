@@ -3,6 +3,7 @@ import json
 import os
 import random
 import re
+from typing import TextIO
 
 from Bio import SeqIO, SeqRecord
 
@@ -36,17 +37,20 @@ def main(argv: list[str] = None):
                            "- same protein is present in both baits and targets.")
   parser.add_argument('-o', '--output', type=dir_path, default="",
                       help="Directory where to write JSON files.  (default: current directory)")
+  parser.add_argument('-S', '--sizes', type=argparse.FileType('w'),
+                      default="./pair_sizes.txt",
+                      help="Filename that will contain the total size of each protein pairs  (default: %(default)s).")
 
   args = parser.parse_args(argv)
 
   json_pairs(baits=args.baits, targets=args.targets, seeds=args.seed,
              unique=args.unique, skip_identity=args.identity,
-             output=args.output)
+             output=args.output, sizes=args.sizes)
 
 
-def json_pairs(baits: str, targets: str, seeds: [int] = None,
+def json_pairs(baits: TextIO, targets: TextIO, seeds: [int] = None,
     unique: bool = False,
-    skip_identity: bool = False, output: str = ""):
+    skip_identity: bool = False, output: str = "", sizes: TextIO = None):
   """
   Create JSON files, each one containing a protein pair, one protein from baits and one protein from targets file.
 
@@ -58,6 +62,7 @@ def json_pairs(baits: str, targets: str, seeds: [int] = None,
   :param skip_identity: don't save JSON file of a protein with itself -
                         if the same protein is present in both baits and targets
   :param output: where to write JSON files
+  :param sizes: output file that will contain the total size of each protein pairs
   """
   baits = parse_fasta(baits)
   targets = parse_fasta(targets)
@@ -86,10 +91,13 @@ def json_pairs(baits: str, targets: str, seeds: [int] = None,
       json_data["sequences"][0] = bait_data
       with open(os.path.join(output, f"{merge_id}.json"), 'w') as output_file:
         output_file.write(json.dumps(json_data, indent=4))
+      if sizes:
+        size = len(str(baits[bait].seq)) + len(str(targets[target].seq))
+        sizes.write(f"{merge_id}\t{str(size)}\n")
       processed_ids.add(merge_id)
 
 
-def parse_fasta(fasta: str) -> dict[str, SeqRecord]:
+def parse_fasta(fasta: TextIO) -> dict[str, SeqRecord]:
   """
   Parses FASTA and returns all sequences found in file mapped by ID.
 

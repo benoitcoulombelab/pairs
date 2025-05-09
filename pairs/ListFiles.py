@@ -14,7 +14,7 @@ RANKING_METRICS_JSON = {
   "plddts": "plddts",
   "ptms": "ptms"
 }
-RANKING_FILES = ["*_summary_confidences.json", "ranking_debug.json",
+RANKING_FILES = ["ranking_scores.csv", "ranking_debug.json",
                  "ranking_all_*.json",
                  "ranking_model_*.json"]
 
@@ -84,21 +84,28 @@ def list_files(input_dir: str, output_file: TextIO, progress: bool = False,
     [ranking_files.extend(glob.glob(os.path.join(directory, ranking_file))) for
      ranking_file in RANKING_FILES]
     ranking_files.sort()
-    best_model = get_best_model(ranking_files, metric)
-    files_to_archive = glob.glob(os.path.join(directory, "*.json"))
-    if all_pdb:
-      files_to_archive.extend(glob.glob(os.path.join(directory, "*.pdb")))
+    if len(ranking_files) == 1 and ranking_files[0].endswith(".csv"):
+      # Assume AlphaFold 3
+      files_to_archive = glob.glob(os.path.join(directory, "*.json"))
+      files_to_archive.extend(glob.glob(os.path.join(directory, "*.cif")))
+      files_to_archive.append(ranking_files[0])
+      files_to_archive.append(os.path.join(directory, "TERMS_OF_USE.md"))
     else:
-      files_to_archive.extend(
-          glob.glob(os.path.join(directory, f"*{best_model}*.pdb")))
-      files_to_archive.extend(
-          glob.glob(os.path.join(directory, f"ranked_0.pdb")))
-    if all_pkl:
-      files_to_archive.extend(
-          glob.glob(os.path.join(directory, "*model_*.pkl")))
-    elif best_pkl:
-      files_to_archive.extend(
-          glob.glob(os.path.join(directory, f"*{best_model}*.pkl")))
+      best_model = get_best_model(ranking_files, metric)
+      files_to_archive = glob.glob(os.path.join(directory, "*.json"))
+      if all_pdb:
+        files_to_archive.extend(glob.glob(os.path.join(directory, "*.pdb")))
+      else:
+        files_to_archive.extend(
+            glob.glob(os.path.join(directory, f"*{best_model}*.pdb")))
+        files_to_archive.extend(
+            glob.glob(os.path.join(directory, f"ranked_0.pdb")))
+      if all_pkl:
+        files_to_archive.extend(
+            glob.glob(os.path.join(directory, "*model_*.pkl")))
+      elif best_pkl:
+        files_to_archive.extend(
+            glob.glob(os.path.join(directory, f"*{best_model}*.pkl")))
     files_to_archive = list(set(files_to_archive))
     files_to_archive.sort()
     for file in files_to_archive:

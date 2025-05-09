@@ -19,6 +19,22 @@ def mock_testclass():
   ListFiles.get_best_model = _get_best_model
 
 
+def create_alphafold3_files(alphafold_output, name):
+  create_files = [f"{name}_confidences.json", f"{name}_data.json",
+                  f"{name}_model.cif",
+                  f"{name}_summary_confidences.json", "ranking_scores.csv",
+                  "TERMS_OF_USE.md"]
+  [open(os.path.join(alphafold_output, file), 'w') for file in create_files]
+  sample_folders = ["seed-1_sample-0", "seed-1_sample-1", "seed-1_sample-2",
+                    "seed-1_sample-3", "seed-1_sample-4"]
+  create_sample_files = ["confidences.json", "model.cif",
+                         "summary_confidences.json"]
+  for sample_folder in sample_folders:
+    os.mkdir(os.path.join(alphafold_output, sample_folder))
+    [open(os.path.join(alphafold_output, sample_folder, file), 'w') for file in
+     create_sample_files]
+
+
 def create_alphafold_files(alphafold_output):
   os.mkdir(os.path.join(alphafold_output, "msas"))
   os.mkdir(os.path.join(alphafold_output, "msas/A"))
@@ -136,6 +152,28 @@ def test_main_input_not_exists(testdir, mock_testclass):
   with pytest.raises(NotADirectoryError):
     ListFiles.main(["-o", output_file, input_dir])
   ListFiles.list_files.assert_not_called()
+
+
+def test_list_files_alphafold3(testdir, mock_testclass):
+  alphafold_outputs = ["RPB1_RPB2", "RPB3_RPB4", "RPB5_RPB6", "RPB7_RPB8"]
+  [testdir.mkdir(output) for output in alphafold_outputs]
+  [create_alphafold3_files(output, output) for output in alphafold_outputs]
+  [shutil.copy(Path(__file__).parent.joinpath("ranking_scores.csv"),
+               f"{output}/ranking_scores.csv") for output in alphafold_outputs]
+  output_file = "output.txt"
+  with open(output_file, 'w') as output_out:
+    ListFiles.list_files("", output_out)
+  with open(output_file, 'r') as output_in:
+    files = output_in.readlines()
+  files = [file.rstrip('\r\n') for file in files]
+  [print(file) for file in files]
+  for output in alphafold_outputs:
+    assert f"{output}/{output}_confidences.json" in files
+    assert f"{output}/{output}_data.json" in files
+    assert f"{output}/{output}_model.cif" in files
+    assert f"{output}/{output}_summary_confidences.json" in files
+    assert f"{output}/ranking_scores.csv" in files
+    assert f"{output}/TERMS_OF_USE.md" in files
 
 
 def test_list_files_alphafold(testdir, mock_testclass):

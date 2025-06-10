@@ -158,7 +158,7 @@ def parse_mapping(mapping_file: TextIO, source_column: int = 0,
     if line.startswith('#'):
       continue
     columns = line.rstrip('\r\n').split('\t')
-    source = columns[source_column]
+    source = columns[source_column].lower()
     converted = columns[converted_column]
     if converted:
       mappings[source] = converted

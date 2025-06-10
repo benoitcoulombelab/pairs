@@ -267,8 +267,11 @@ def test_parse_mapping(testdir, mock_testclass):
     mapping_out.write("RPB2_HUMAN\tPOLR2B\n")
   with open(mapping_file, 'r') as mapping_in:
     mappings = Af3Score.parse_mapping(mapping_file=mapping_in)
-  assert "RPB1_HUMAN" in mappings
-  assert mappings["RPB1_HUMAN"] == "POLR2A"
-  assert "RPB2_HUMAN" in mappings
-  assert mappings["RPB2_HUMAN"] == "POLR2B"
+  assert "rpb1_human" in mappings
+  assert mappings["rpb1_human"] == "POLR2A"
+  assert "rpb2_human" in mappings
+  assert mappings["rpb2_human"] == "POLR2B"
+  assert "nogene_human" not in mappings
+  assert "RPB1_HUMAN" not in mappings
+  assert "RPB2_HUMAN" not in mappings
   assert "NOGENE_HUMAN" not in mappings

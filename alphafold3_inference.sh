@@ -49,8 +49,13 @@ then
   export XLA_FLAGS="--xla_gpu_enable_triton_gemm=false"
 
   # https://github.com/google-deepmind/alphafold3/blob/main/docs/performance.md#gpu-memory
+  # For 3,000 tokens or less on A100 40GB.
   export XLA_PYTHON_CLIENT_PREALLOCATE=true
   export XLA_CLIENT_MEM_FRACTION=0.95
+  # For more than 3000 tokens on A100 40GB.
+  #export XLA_PYTHON_CLIENT_PREALLOCATE=false
+  #export TF_FORCE_UNIFIED_MEMORY=true
+  #export XLA_CLIENT_MEM_FRACTION=3.2
 fi
 
 mkdir -p "${output}"

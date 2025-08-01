@@ -4,8 +4,8 @@
 if [[ -n "$CC_CLUSTER" ]]
 then
   module purge
-  module load StdEnv/2020
-  module load nextflow/22.10.6
+  module load StdEnv/2023
+  module load nextflow/25.04.6
 fi
 if [[ "beluga" == "$CC_CLUSTER" ]]
 then

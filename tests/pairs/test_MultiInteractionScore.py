@@ -121,14 +121,15 @@ def test_multi_interaction_score(testdir, mock_testclass):
   with open(output_file, 'w') as output_out:
     MultiInteractionScore.multi_interaction_score(input_files=pdbs,
                                                   output_file=output_out)
-  InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0,
+  InteractionScore.interaction_score.assert_any_call(structure_file=ANY,
+                                                     radius=6.0,
                                                      weight=False, count=False,
                                                      first_chains=["A"],
                                                      second_chains=["B"],
                                                      partial=False)
   for i in range(0, len(pdbs)):
     assert InteractionScore.interaction_score.call_args_list[i].kwargs[
-             "pdb"].name == pdbs[i]
+             "structure_file"].name == pdbs[i]
   assert os.path.isfile(output_file)
   with open(output_file, 'r') as output_in:
     assert output_in.readline() == "Bait\tTarget\tScore\n"
@@ -147,14 +148,15 @@ def test_multi_interaction_score_parameters(testdir, mock_testclass):
         input_files=pdbs, output_file=output_out, radius=9.0, weight=True,
         count=True,
         first_chains=["A", "B"], second_chains=["C", "D"], partial=True)
-  InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=9.0,
+  InteractionScore.interaction_score.assert_any_call(structure_file=ANY,
+                                                     radius=9.0,
                                                      weight=True, count=True,
                                                      first_chains=["A", "B"],
                                                      second_chains=["C", "D"],
                                                      partial=True)
   for i in range(0, len(pdbs)):
     assert InteractionScore.interaction_score.call_args_list[i].kwargs[
-             "pdb"].name == pdbs[i]
+             "structure_file"].name == pdbs[i]
   assert os.path.isfile(output_file)
   with open(output_file, 'r') as output_in:
     assert output_in.readline() == "Bait\tTarget\tScore\n"
@@ -181,14 +183,15 @@ def test_multi_interaction_score_mapping(testdir, mock_testclass):
                                                   mapping_file=mapping_in)
     MultiInteractionScore.parse_mapping.assert_called_once_with(mapping_in, 0,
                                                                 1)
-  InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0,
+  InteractionScore.interaction_score.assert_any_call(structure_file=ANY,
+                                                     radius=6.0,
                                                      weight=False, count=False,
                                                      first_chains=["A"],
                                                      second_chains=["B"],
                                                      partial=False)
   for i in range(0, len(pdbs)):
     assert InteractionScore.interaction_score.call_args_list[i].kwargs[
-             "pdb"].name == pdbs[i]
+             "structure_file"].name == pdbs[i]
   assert os.path.isfile(output_file)
   with open(output_file, 'r') as output_in:
     assert output_in.readline() == "Bait\tTarget\tScore\n"
@@ -273,14 +276,15 @@ def test_multi_interaction_score_progress(testdir, mock_testclass):
                                                   output_file=output_out,
                                                   progress=True)
     mock_tqdm.assert_called_once_with(pdbs)
-  InteractionScore.interaction_score.assert_any_call(pdb=ANY, radius=6.0,
+  InteractionScore.interaction_score.assert_any_call(structure_file=ANY,
+                                                     radius=6.0,
                                                      weight=False, count=False,
                                                      first_chains=["A"],
                                                      second_chains=["B"],
                                                      partial=False)
   for i in range(0, len(pdbs)):
     assert InteractionScore.interaction_score.call_args_list[i].kwargs[
-             "pdb"].name == pdbs[i]
+             "structure_file"].name == pdbs[i]
   assert os.path.isfile(output_file)
   with open(output_file, 'r') as output_in:
     assert output_in.readline() == "Bait\tTarget\tScore\n"
@@ -363,9 +367,11 @@ def test_alphafold_statistics(testdir, mock_testclass):
       side_effect=[8.2, 2.3, 4.5, 8.2])
   alphafold_statistics = MultiInteractionScore.alphafold_statistics(directory)
   InteractionScore.interaction_score.assert_any_call(
-      pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["A"],
+      structure_file=ANY, radius=6.0, weight=False, count=False,
+      first_chains=["A"],
       second_chains=["B"], partial=False)
-  assert InteractionScore.interaction_score.call_args_list[0].kwargs["pdb"].name \
+  assert InteractionScore.interaction_score.call_args_list[0].kwargs[
+           "structure_file"].name \
          == os.path.join(directory, "ranked_0.pdb")
   assert InteractionScore.interaction_score.call_args_list[0].kwargs[
            "first_chains"] == ["A"]
@@ -385,10 +391,11 @@ def test_alphafold_statistics_ranked0_only(testdir, mock_testclass):
   InteractionScore.interaction_score = MagicMock(return_value=8.2)
   alphafold_statistics = MultiInteractionScore.alphafold_statistics(directory)
   InteractionScore.interaction_score.assert_called_once_with(
-      pdb=ANY, radius=6.0, weight=False, count=False, first_chains=["A"],
+      structure_file=ANY, radius=6.0, weight=False, count=False,
+      first_chains=["A"],
       second_chains=["B"], partial=False)
   assert InteractionScore.interaction_score.call_args.kwargs[
-           "pdb"].name == os.path.join(directory, "ranked_0.pdb")
+           "structure_file"].name == os.path.join(directory, "ranked_0.pdb")
   assert alphafold_statistics.directory == directory
   assert alphafold_statistics.ranked0_score == 8.2
   assert alphafold_statistics.ranked0_confidence is None

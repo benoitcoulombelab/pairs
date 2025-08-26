@@ -7,6 +7,7 @@ import smokesignal
 from Bio.PDB import PDBParser, NeighborSearch
 from Bio.PDB.Atom import Atom
 from Bio.PDB.Chain import Chain
+from Bio.PDB.MMCIFParser import MMCIFParser
 from Bio.PDB.Residue import Residue
 from Bio.SeqUtils import molecular_weight, seq1
 
@@ -25,7 +26,7 @@ def main(argv: list[str] = None):
       description="Compute protein-protein interaction score from PDB file")
   parser.add_argument('input', nargs='?', type=argparse.FileType('r'),
                       default=sys.stdin,
-                      help="PDB file created by AlphaFold containing two proteins of interest")
+                      help="PDB or CIF file created by AlphaFold containing two (or more) proteins of interest")
   parser.add_argument('-a', '--first', default="A",
                       help="Chains of first protein separated by ','  (default: %(default)s)")
   parser.add_argument('-b', '--second', default="B",
@@ -55,7 +56,7 @@ def main(argv: list[str] = None):
   args.second = args.second.split(',')
   smokesignal.on(MISSING_CHAIN_EVENT, warn_missing_chain, max_calls=1)
 
-  score = interaction_score(pdb=args.input, radius=args.radius,
+  score = interaction_score(structure_file=args.input, radius=args.radius,
                             weight=args.weight, count=args.count,
                             first_chains=args.first, second_chains=args.second,
                             residues=args.residues,
@@ -63,7 +64,7 @@ def main(argv: list[str] = None):
   args.output.write(f"{score}\n")
 
 
-def interaction_score(pdb: TextIO, radius: float = 6,
+def interaction_score(structure_file: TextIO, radius: float = 6,
     weight: bool = False, count: bool = False,
     first_chains: list[str] = ["A"],
     second_chains: list[str] = ["B"],
@@ -75,7 +76,7 @@ def interaction_score(pdb: TextIO, radius: float = 6,
 
   By default, the score is the number of residue pairs that have atoms at a distance below radius.
 
-  :param pdb: PDB file
+  :param structure_file: PDB or CIF file
   :param radius: maximal distance between two residues' atoms to consider that the two residues interact
   :param weight: if True, normalize score by proteins' weight
   :param count: if True, score is the number of residue pairs below radius
@@ -87,7 +88,9 @@ def interaction_score(pdb: TextIO, radius: float = 6,
   :return: score of proteins interaction
   """
   parser = PDBParser()
-  structure = parser.get_structure("unknown", pdb)
+  if structure_file.name.endswith(".cif"):
+    parser = MMCIFParser()
+  structure = parser.get_structure("unknown", structure_file)
   if not partial:
     for chain in structure[0]:
       if chain.get_id() not in first_chains + second_chains:

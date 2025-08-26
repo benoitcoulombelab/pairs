@@ -136,7 +136,7 @@ def multi_interaction_score(input_files: list[str],
     else:
       with open(input_file, 'r') as input_in:
         score = InteractionScore.interaction_score(
-            pdb=input_in, radius=radius, weight=weight, count=count,
+            structure_file=input_in, radius=radius, weight=weight, count=count,
             first_chains=first_chains, second_chains=second_chains,
             partial=partial)
       output_file.write(f"{score}\n")
@@ -164,7 +164,7 @@ def alphafold_statistics(directory: str, radius: float = 6,
         f"ranked_0.pdb does not exists in directory {directory}")
   with open(ranked0_file, 'r') as input_in:
     ranked0_score = InteractionScore.interaction_score(
-        pdb=input_in, radius=radius, weight=weight, count=count,
+        structure_file=input_in, radius=radius, weight=weight, count=count,
         first_chains=first_chains, second_chains=second_chains, partial=partial)
   ranking_file = os.path.join(directory, "ranking_debug.json")
   ranked0_confidence = None

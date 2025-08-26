@@ -138,36 +138,49 @@ def test_main_long_parameters(testdir, mock_testclass):
 
 def test_interaction_score(testdir, mock_testclass):
   pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
-  score = InteractionScore.interaction_score(structure_file=pdb)
-  assert abs(score - 321.92) < 0.01, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, count=True)
-  assert score == 580, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, weight=True)
-  assert abs(score - 17.47) < 0.01, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, weight=True,
-                                             count=True)
-  assert abs(score - 31.48) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in)
+    assert abs(score - 321.92) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               count=True)
+    assert score == 580, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               weight=True)
+    assert abs(score - 17.47) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               weight=True, count=True)
+    assert abs(score - 31.48) < 0.01, f"{score}"
 
 
 def test_interaction_score_cif(testdir, mock_testclass):
   pdb = Path(__file__).parent.joinpath("mllt1_model_0.cif")
-  score = InteractionScore.interaction_score(structure_file=pdb)
-  assert abs(score - 84.96) < 0.01, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, count=True)
-  assert score == 139, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, weight=True)
-  assert abs(score - 5.18) < 0.01, f"{score}"
-  score = InteractionScore.interaction_score(structure_file=pdb, weight=True,
-                                             count=True)
-  assert abs(score - 8.47) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in)
+    assert abs(score - 84.96) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               count=True)
+    assert score == 139, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               weight=True)
+    assert abs(score - 5.18) < 0.01, f"{score}"
+  with open(pdb, "r") as pdb_in:
+    score = InteractionScore.interaction_score(structure_file=pdb_in,
+                                               weight=True, count=True)
+    assert abs(score - 8.47) < 0.01, f"{score}"
 
 
 def test_interaction_score_write_residues(testdir, mock_testclass):
   pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
   residue_pairs_file = "residues.txt"
   InteractionScore.write_residues = MagicMock()
-  with open(residue_pairs_file, 'w') as residue_pairs_out:
-    InteractionScore.interaction_score(structure_file=pdb,
+  with open(pdb, "r") as pdb_in, open(residue_pairs_file,
+                                      'w') as residue_pairs_out:
+    InteractionScore.interaction_score(structure_file=pdb_in,
                                        residues=residue_pairs_out)
     InteractionScore.write_residues.assert_called_once_with(ANY,
                                                             residue_pairs_out)
@@ -186,8 +199,9 @@ def test_interaction_score_write_atoms(testdir, mock_testclass):
   pdb = Path(__file__).parent.joinpath("POLR2A_POLR2B_ranked_0.pdb")
   atom_pairs_file = "atoms.txt"
   InteractionScore.write_atoms = MagicMock()
-  with open(atom_pairs_file, 'w') as atom_pairs_out:
-    InteractionScore.interaction_score(structure_file=pdb, atoms=atom_pairs_out)
+  with open(pdb, "r") as pdb_in, open(atom_pairs_file, 'w') as atom_pairs_out:
+    InteractionScore.interaction_score(structure_file=pdb_in,
+                                       atoms=atom_pairs_out)
     InteractionScore.write_atoms.assert_called_once_with(ANY, atom_pairs_out)
   atoms_pairs = InteractionScore.write_atoms.call_args.args[0]
   chain_a = atoms_pairs[0][0].get_parent().get_parent()
@@ -224,7 +238,8 @@ def test_interaction_score_unused_chain(testdir, mock_testclass, capsys):
   smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT,
                  InteractionScore.warn_missing_chain, max_calls=1)
   pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
-  InteractionScore.interaction_score(structure_file=pdb)
+  with open(pdb, "r") as pdb_in:
+    InteractionScore.interaction_score(structure_file=pdb_in)
   out, err = capsys.readouterr()
   sys.stderr.write(err)
   assert err == "Chain C present in PDB but not used for scoring\n"
@@ -235,7 +250,8 @@ def test_interaction_score_unused_chain_partial(testdir, mock_testclass,
   smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT,
                  InteractionScore.warn_missing_chain, max_calls=1)
   pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
-  InteractionScore.interaction_score(structure_file=pdb, partial=True)
+  with open(pdb, "r") as pdb_in:
+    InteractionScore.interaction_score(structure_file=pdb_in, partial=True)
   out, err = capsys.readouterr()
   sys.stderr.write(err)
   assert "Chain C present in PDB but not used for scoring\n" not in err
@@ -246,8 +262,10 @@ def test_interaction_score_unused_chain_multiple_pdb(testdir, mock_testclass,
   smokesignal.on(InteractionScore.MISSING_CHAIN_EVENT,
                  InteractionScore.warn_missing_chain, max_calls=1)
   pdb = Path(__file__).parent.joinpath("FAB_5_3__HVM13_MOUSE_ranked_0.pdb")
-  InteractionScore.interaction_score(structure_file=pdb)
-  InteractionScore.interaction_score(structure_file=pdb)
+  with open(pdb, "r") as pdb_in:
+    InteractionScore.interaction_score(structure_file=pdb_in)
+  with open(pdb, "r") as pdb_in:
+    InteractionScore.interaction_score(structure_file=pdb_in)
   out, err = capsys.readouterr()
   sys.stderr.write(err)
   assert err == "Chain C present in PDB but not used for scoring\n"
